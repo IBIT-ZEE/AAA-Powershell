@@ -314,17 +314,21 @@ function AAA-Info
 	}
 
 
+<#
+Substitute with 
+	AAA-Functions for in PS/Console
+	AAA-Scripts   for in CMS/Console (called from ???-.ps1)
 
+#>
 function AAA-List ( )
 	{
 	
 	$x = ( Get-PSCallStack )[1].FunctionName
 	Get-Command ( "{0}-*" -f $x ) -CommandType function
 	
-	Print "`n"
+	"`n"
 
-	# ??? eliminate so only functons are listes
-	$x = "*{0}*" -f $x
+	$x = "*$x*"
 	Get-Command $x -CommandType function
 	Get-Command $x -CommandType cmdlet
 	Get-Command $x -CommandType alias

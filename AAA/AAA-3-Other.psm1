@@ -6,12 +6,65 @@
 Set-StrictMode -Version 5;
 
 
-function AAAZ-On(){ AAA-Warn( "AAAZ-Module is loaded..." ) }
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+#
+#  |A|V| * Windows Defender
+#
+
+function AV- { AAA-List }
+
+<#
+Will return a AV object to hold state (currying)
+and still use the VM-* functions
+to control Windows Defender in a Local or Network PC
+#>
+function AV-New( $xHost=".", $xUser="", $xPass="" )
+	{ 
+	return [AV]::new( $xHost, $xUser, $xPass );  
+	}
+
+class AV 
+	{ 
+	[string]$xHost     = ".";
+	[string]$xUser     = "";
+	[string]$xPassword = "";
+
+	# +ctor
+	AV( [string]$xHost, [string]$xUser, [string]$xPass )
+		{
+		$this.xHost = $xHost;
+		$this.xUser = $xUser;
+		$this.xPassword = $xPass;
+
+		"Created for {0} {1} {2}" -f  $this.xHost, $this.xUser, $this.xPassword;
+
+		}
+
+
+	# turn AV on
+	On() 
+		{ Write-Host "Turning on AV for {0}..." -f $this.xHost  }
+
+	# turn AV off
+	Off() 
+		{ Write-Host "Turning off AV for {0}..." -f $this.xHost  }
+
+	# Start a scan
+	# 
+	Scan( $xDrives )
+		{
+		
+		}
+
+
+	}
+
+
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 #
-#  |M|Y|S|QL| * MySQL
+#  |M|Y|S|Q|L| * MySQL
 #
 
 
@@ -134,5 +187,41 @@ function String-Pattern-Stair( $xString = "*", $xLines = 3, $xWidth )
 	# EXCEED THEN TRUNCATE TO FIX DIVISION ROUND FAULTS
 	$xData += ( $xString * $xGrowing * ++$xLines ).Substring( 0, $xWidth );
 	return $xData;
+	}
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+#
+#  |V|M| * Hyper-V
+#
+
+function VM- { AAA-List }
+	
+<#
+Will return a VM object to hold state (currying)
+and still use the VM-* functions
+#>
+function VM-New { return [VM]::new();  }
+
+class VM 
+	{ 
+	[string]$xHost     = ".";
+	[string]$xUser     = "";
+	[string]$xPassword = "";
+
+	# Startup the VM
+	On() {}
+
+	# Shutdown the VM
+	Off() {}
+
+	# Connect the console
+	Show(){}
+
+	# Disconnect the console
+	Hide(){}
+
+
 	}
 
