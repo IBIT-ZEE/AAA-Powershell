@@ -36,3 +36,4 @@ $WarningPreference = "Continue"
 
 # Start-Sleep -Seconds 10
 
+function Prompt() { Get-Date -Format "`nyyyy.MM.dd-hh.mm.ss`n> "  }

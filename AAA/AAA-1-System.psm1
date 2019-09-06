@@ -323,6 +323,17 @@ function File-Reset( [string] $x )
 	}
 
 
+<#
+$x = [system.diagnostics.fileversioninfo]::getversioninfo( <fullpath> )
+
+#>
+function File-Version( $xFile )
+	{
+	
+
+	}
+
+
 function File-Write( [string]$xFile )
 	{
 	# same as ~> Set-Content
@@ -663,7 +674,9 @@ function Windows-LicenseBySLMgr()
 
 	}
 
+<#
 
+#>
 function Windows-LicenseByWMI()
 	{
 	wmic.exe path SoftwareLicensingService get OA3xOriginalProductKey
@@ -673,4 +686,32 @@ function Windows-LicenseByWMI()
 function Windows-Update- { AAA-List }
 
 function Windows-Update-Log {  }
+
+
+
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#
+#  |W|M|I|
+#
+#  Windows Managment Instrumentation
+#
+
+
+function WMI-() { AAA-Functions }
+
+<#
+Get-Command -Noun * | Get-Command -Verb *
+#>
+function WMI-List( $xFilter="*" )        { Get-WmiObject -List $x }
+
+
+<#
+
+#>
+function WMI-Object( $xName="*" )       { Get-WmiObject $x }
+
 

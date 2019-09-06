@@ -70,15 +70,6 @@ $global:AAAX = `
 	}
 
 
-function test-xxx
-	{
-	param()
-
-	$x = 111
-	Write-Host "x is $x"
-	Read-Host
-	}
-
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 #
 #  AAAX-Fix
@@ -128,13 +119,6 @@ function _() { AAA-Classes;   }
 function AAA-Check()          { return $true }
 
 
-# Get-Command -Noun * | Get-Command -Verb *
-function WMI( $x="*" )        { Get-WmiObject -List $x }
-
-function WMIO( $x="*" )       { Get-WmiObject $x }
-# FUNCTIONS +++ repeat(c, x); loop(c); timeout(c); timed(c,i); ...
-
-
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
@@ -146,7 +130,7 @@ function WMIO( $x="*" )       { Get-WmiObject $x }
 <#
 to be replaced with AAA-Functions
 #>
-function AAA- { AAA-List }
+function AAA- { AAA-Functions }
 
 
 
@@ -230,7 +214,15 @@ List all AAA-* functions
 #>
 function AAA-Functions
 	{
+	$x = ( Get-PSCallStack )[1].FunctionName
+	Get-Command ( "{0}-*" -f $x ) -CommandType function
+	
+	"`n"
 
+	$x = "*$x*"
+	Get-Command $x -CommandType function
+	Get-Command $x -CommandType cmdlet
+	Get-Command $x -CommandType alias
 	}
 
 
@@ -315,23 +307,12 @@ function AAA-Info
 
 
 <#
-Substitute with 
-	AAA-Functions for in PS/Console
-	AAA-Scripts   for in CMS/Console (called from ???-.ps1)
-
+***DEPRECATED TO REMOVE
+use AAA-Functions for in PS/Console
 #>
 function AAA-List ( )
 	{
-	
-	$x = ( Get-PSCallStack )[1].FunctionName
-	Get-Command ( "{0}-*" -f $x ) -CommandType function
-	
-	"`n"
-
-	$x = "*$x*"
-	Get-Command $x -CommandType function
-	Get-Command $x -CommandType cmdlet
-	Get-Command $x -CommandType alias
+	AAA-Functions
 	}
 
 
@@ -597,7 +578,19 @@ function AAA-MessageYN( $x ) { AAA-Message $x "Yes/No" 2 2; }
 
 
 
+<#
+Return a oProgress
+#>
+function AAA-Progress( $xMS = 1 )
+	{
+	
+	}
+
+
+
+<#
 # FAKE A PROGRESS process from 0..100
+#>
 function AAA-ProgressFake( $xMS = 1 )
 	{
 	for ( $x = 0; $x -le 100; $x++ ) 
@@ -613,17 +606,14 @@ function AAA-ProgressFake( $xMS = 1 )
 
 
 
+
 <#
 Self lister for AAA-* auto-discovery
 >AAA-Functions
+Folder to seach for sibblings are taken from file fullname
 #>
 function AAA-Scripts
 	{
-	# Extensions to treat
-	$xData = @( 
-		@{ id="Powershell"; Extension="ps1" }, 
-		@{ id="Batch";      Extension="cmd" } 
-		)
 
 	# Get current script name
 	# the name of the script that called this function PSCallStack[1]
@@ -635,6 +625,12 @@ function AAA-Scripts
 	$xFolder = $xScript | Split-Path -Parent
 	$xName   = $xScript | Split-Path -Leaf
 	$xFiles  = $xName.ToLower().Replace( ".ps1", "" )
+
+	# Extensions to treat
+	$xData = @( 
+		@{ id="Powershell"; Extension="ps1" }, 
+		@{ id="Batch";      Extension="cmd" } 
+		)
 
 	foreach( $e in $xData )
 		{
@@ -654,8 +650,21 @@ function AAA-Scripts
 
 
 
-function AAA-Test- { AAA-List }
+	Get-ChildItem -Path C:\DAT\#ScriptsX\*-.cmd -Name
 
+
+<#
+Special *- and *-- scripts
+
+#>
+function AAA-ScriptsX
+	{
+	$xFiles = Get-ChildItem -Path C:\DAT\#ScriptsX\*-.cmd -Name
+	
+	}
+
+
+function AAA-Test- { AAA-Functions }
 
 
 function AAA-Test-Code( $x1="aaa111", $x2="bbb222", $x3=333, $x4=444 ) 
@@ -671,7 +680,38 @@ function AAA-Test-Code( $x1="aaa111", $x2="bbb222", $x3=333, $x4=444 )
 	}
 
 
-# Testing data
+
+<#
+AAA-Random
+default is 0..100 
+???create AAAX.Random.Min/Max/Step/Seed
+
+Need TYPED <int32> parameters because 
+in certain cases Powershell was converting -<N> to a string
+
+used int32.MinValue/MaxValue to emulate $null/NO paramenter passed
+#>
+
+function AAA-Random( [int]$xLo = [int]::MaxValue , [int]$xHi = [int]::MinValue )
+	{
+	# 1. if $xHi is <Minvalue> then $xHi becomes $xLo
+	# 2. if $xHi NOW are <MaxValue> (cause $xLo was it/no parameters) 0..100
+	# 3. if $xLo > $xHi then swap variables
+	if ( $xHi -eq [int]::MinValue ) { $xLo, $xHi = 0, $xLo    }
+	if ( $xHi -eq [int]::MaxValue ) { $xLo = 0; $xHi = 100 }
+	if ( $xLo -gt $xHi  ) { $xLo, $xHi = $xHi, $xLo; }
+
+	# assure that hi-limmit is ellegible to draw
+	$xHi++;
+
+	return Get-Random -Minimum $xLo -Maximum $xHi
+	}
+
+
+<#
+Testing data
+
+#>
 function AAA-Test-Data
 	{
 	$global:a = 1, 22, 333, 4444, 55555, 666666, 7777777;
@@ -701,6 +741,9 @@ function AAA-Test-Data
 	}
 
 
+<#
+***DEPRECATED use AAA-Alert
+#>
 function AAA-Warn( [string] $x ) 
 	{
 
@@ -729,7 +772,7 @@ function AAA-Warn( [string] $x )
 #  |A|R|R|A|Y|
 #
 
-function Array- { AAA-List }
+function Array- { AAA-Functions }
 
 function Array-Declare( $xArray )
 	{
@@ -858,22 +901,71 @@ function Array-ScanPrevious( $xArray, $xElement, [int]$xPos = 0 )
 
 
 
+<#
+Sort an Array
+Faster then Sort-Object
+
+ATT** REFACTOR
+Clone to avoid mutating the paramenter until best solution is found
+skip overloading functions but elements should be all of the same type
+or STRAGENESS will appear
+
+alternative...
+[linq.enumerable]::orderby( [int[]]$, [func[int,int]]{ $args[0] } )
+[linq.enumerable]::orderby( [string[]]$, [func[string,string]]{ $args[0] } )
+#>
+function Array-Sort( $xArray )
+	{
+	$xTemp = $xArray.Clone();
+	[System.Array]::Sort( $xTemp );
+	return $xTemp;
+	}
+
+
+<#
+Drop repetead elements
+first fount elements are maintainded
+last elements are dropped
+#>
+function Array-Unique( $xArray )
+	{
+	return [LINQ.Enumerable]::Distinct( [object[]] $xArray )
+	}
+
+
+
+
+
+
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
-#  |F|I|L|E
-#
-# ***** SNIPPETS *****
-# $x = [system.diagnostics.fileversioninfo]::getversioninfo( <fullpath> )
+#  |O|B|J|E|C|T|
 #
 
 
-function File-Version( $xFile )
+<#
+Sibblings list...
+#>
+function Object- { AAA-Functions }
+
+
+<#
+Compare object properties
+Show the differences
+#>
+function Object-Compare ( [PSObject] $xBase, [PSObject] $xComp )
 	{
 	
+	# get all base-object + compare-object property names
+	# and drop repeats (select unique)
+	$xBaseProps = @();
+	$xBaseProps += (Get-Member -InputObject $xBase -MemberType Property, NoteProperty).name
+	$xBaseProps += (Get-Member -InputObject $xComp -MemberType Property, NoteProperty).name
+
+
 
 	}
-
 
 
 
@@ -895,7 +987,7 @@ function File-Version( $xFile )
 ? Strings-* or String overload ??
 
 #>
-function String-  { AAA-List }
+function String-  { AAA-Functions }
 
 
 
