@@ -134,15 +134,18 @@ function AAA- { AAA-Functions }
 
 
 
-# REFACTOR***
-# SIMPLIFY
+<#
+REFACTOR***
+SIMPLIFY
+
+PSEUDO-FUNCTION-OVERLOAD
+for String and String[]
+if ( $xData -is [array] ) { } else { }
+
+#>
 function AAA-Alert( $xData ) 
 	{
 	Sound-Plim;
-
-	# PSEUDO-FUNCTION-OVERLOAD
-	# for String and String[]
-	# if ( $xData -is [array] ) { } else { }
 
 	$xPattern = String-Center ( String-Pattern-Stair "*" 5 );
 	$xData = String-Center $xData;
@@ -151,25 +154,41 @@ function AAA-Alert( $xData )
 	Array-Invert $xPattern;
 
 	Sound-Plum;
+	}
+
+
+<#
+Alias add
+Alias replacer
+
+Usually called from profile.ps1
+#>
+function AAA-Alias 
+	{
+
+	# ADD
+	Set-Alias -Scope "global" -Name a -Value Get-alias 
+	Set-Alias -Scope "global" -Name v -Value variables
+
+	Set-Alias -Scope "global" -Name hx -Value historyX
+	Set-Alias -Scope "global" -Name hi -Value Invoke-History
+	Set-Alias -Scope "global" -Name so -Value Select-Object
+	Set-Alias -Scope "global" -Name wo -Value Where-Object
+
+	Set-Alias -Scope "global" -Name alias -Value Get-alias 
+	Set-Alias -Scope "global" -Name vars  -Value variables
+
+	# REPLACE
+	Set-Alias -Option AllScope -Scope "global" -Name h -Value AAA-History
 	
 	}
 
 
-function AAA-Alias()
-	{
-	# HISTORY
-	Set-Alias -Name hv -Value AAA-History
-	Set-Alias -Name hi -Value Invoke-History
-
-	Set-Alias -Name so -Value Select-Object
-
-	}
-
-
-
-# minimum property bag for aaa persistent objects
-# use with export/import-clixml 
-# or other serialization/persistency method
+<#
+minimum property bag for aaa persistent objects
+use with export/import-clixml 
+or other serialization/persistency method
+#>
 function AAA-Bag()
 	{
 	return `
@@ -277,14 +296,25 @@ function AAA-Help
 	}
 
 
+<#
 
-
-
-function AAA-History 
+#>
+function AAA-History( $xMatch )
 	{
-	Get-History | Out-GridView -PassThru | Invoke-History $_
+	return (Get-History | Where-Object { $_.CommandLine -match $xMatch } )
 	}
 
+function AAA-HistoryX( [string]$xMatch = "." ) 
+	{ 
+	Get-History `
+		| Where-Object { $_.CommandLine -match $xMatch } `
+		| Out-GridView -PassThru `
+		| Set-Clipboard ;
+
+	""
+	"Clipboard set with..."
+	Get-Clipboard
+	}
 
 function AAA-Info 
 	{
