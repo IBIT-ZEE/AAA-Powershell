@@ -180,6 +180,73 @@ function Software-Uninstall {}
 
 
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+#
+#  |T|T|S| * Text To Speech
+#
+#
+#		System.Speech.Synthesis
+#		System.Speech.Recognition
+#		System.Speech.AudioFormat
+#
+<#
+
+initialize AAA.TTS
+
+#>
+
+function TTS- { AAA-Functions }
+
+
+<#
+set AAA.TTS
+	.rate
+	.voice
+	.culture
+	...
+#>
+function TTS-Initialize( $xText )
+	{
+
+	}
+
+
+<#
+
+#>
+function TTS-Speak( $xText )
+	{
+	# if no text 
+	# then get from clipboard
+	if ( $null -eq $xText ){ $xText = Get-Clipboard  }
+
+	# use AAA.TTS
+	# if AAA.TTS -is $NULL message/GUI
+	$xTTS = [System.Speech.Synthesis.SpeechSynthesizer]::new();
+	$xTTS.Rate = -2;
+
+	$xTTS.SpeakAsync( $xText );
+	}
+
+
+function TTS-Test
+	{
+	
+	# use AAA.TTS
+	# if AAA.TTS -is $NULL message/GUI
+	$xTTS = [System.Speech.Synthesis.SpeechSynthesizer]::new();
+	$xTTS.Rate = -2;
+
+	Foreach ( $xVox in $xTTS.GetInstalledVoices() )
+		{
+		""
+		$xVox.VoiceInfo;
+		$xTTS.Speak( $xVox.VoiceInfo.Name );
+		$xTTS.Speak( $xVox.Voiceinfo.Description );
+		""
+		}
+	
+	}
 
 
 
@@ -188,7 +255,7 @@ function Software-Uninstall {}
 #  |W|O|L| * Network
 #
 
-function WOL- { AAA-List }
+function WOL- { AAA-Functions }
 
 '''
 38-60-77-2A-4F-9D	Demo1

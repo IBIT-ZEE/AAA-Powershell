@@ -6,58 +6,144 @@
 Set-StrictMode -Version 5;
 
 
+
+
+
+
+
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 #
-#  |A|V| * Windows Defender
+#  |D|A|T|A|B|A|S|E|
+#
+<#
+Generic interface (façade) for MSSQL, MySQL, PostGRES, MongoDB, ...
+
+Database-
+	@( -host xHost )
+	+
+	-List ....... ask DB engine for databases
+	-Open ....... -name ~> create object and store propertties
+	-Insert ..... -name -> create a new Database
+	-Remove ..... -name -> delete a database 
+	-TransOn .... Transaction open
+	-TransOff ... Transactioon close
+
+Database-Table- | xDB.Table( <name> )
+	@( -host xHost, -table xTable )
+	+
+	-FieldId ... field used for Id/unique (none means not unique)
+	-Get ....... get one object
+	-Find ...... -name/regex
+	-List ...... get collection of objects
+	-Insert .... -name
+	-Remove .... -name
+
+Database-Table-Record- | Database-Record | xDB.Table( <name> ).Record
+	@( -host xHost, -table xTable)
+	+
+	-Active ... ?last
+	-Get ...... by ID, use Table.FieldId
+	-Find ..... { Q.e.D }
+
+Database-Table-Record-Field- | Database-Field | xDB.Field( <name> )
+	@( -host xHost, -table xTable, -record id )
+	* atomic value
+	+
+	-List
+	-Find
+	-Value ... 
+
+#>
+
+
+function Database- { AAA-Functions }
+
+
+
+function Database-Object 
+	{  
+
+	}
+
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+#
+#  |M|O|N|G|O|
 #
 
-function AV- { AAA-List }
+
+function Mongo- { AAA-Functions }
+
+
 
 <#
-Will return a AV object to hold state (currying)
-and still use the VM-* functions
-to control Windows Defender in a Local or Network PC
+
 #>
-function AV-New( $xHost=".", $xUser="", $xPass="" )
-	{ 
-	return [AV]::new( $xHost, $xUser, $xPass );  
-	}
-
-class AV 
-	{ 
-	[string]$xHost     = ".";
-	[string]$xUser     = "";
-	[string]$xPassword = "";
-
-	# +ctor
-	AV( [string]$xHost, [string]$xUser, [string]$xPass )
-		{
-		$this.xHost = $xHost;
-		$this.xUser = $xUser;
-		$this.xPassword = $xPass;
-
-		"Created for {0} {1} {2}" -f  $this.xHost, $this.xUser, $this.xPassword;
-
-		}
-
-
-	# turn AV on
-	On() 
-		{ Write-Host "Turning on AV for {0}..." -f $this.xHost  }
-
-	# turn AV off
-	Off() 
-		{ Write-Host "Turning off AV for {0}..." -f $this.xHost  }
-
-	# Start a scan
-	# 
-	Scan( $xDrives )
-		{
-		
-		}
-
+function Mongo-Object 
+	{  
 
 	}
+
+
+
+<#
+
+#>
+function Mongo-Database- { AAA-Functions }
+
+
+
+<#
+
+#>
+function Mongo-Database-List 
+	{ 
+	
+	}
+
+
+
+<#
+
+#>
+function Mongo-Database-Open
+	{ 
+	
+	}
+
+
+
+
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+#
+#  |M|S|S|Q|L| * MSSQL
+#
+
+
+function MSSQL- { AAA-Functions }
+
+
+
+function MSSQL-Object 
+	{  
+
+	}
+
+
+
+
+
+
+
+
 
 
 
@@ -68,7 +154,7 @@ class AV
 #
 
 
-function MySQL- { AAA-List }
+function MySQL- { AAA-Functions }
 
 function MySQL-On {}
 
@@ -76,20 +162,6 @@ function MySQL-Off {}
 
 
 function MySQL-Open { "xxx" }
-
-
-
-function AAA-Reload
-	{
-	Sound-Plim;
-
-	Write-Host "Import-Module -Force " + $AAAX.Modules.Base;
-	Write-Host "Import-Module -Force " + $AAAX.Modules.System;
-	Write-Host "Import-Module -Force " + $AAAX.Modules.Extensions;
-	Write-Host "Import-Module -Force " + $AAAX.Modules.Other;
-
-	Sound-Plum;
-	}
 
 
 
@@ -156,10 +228,6 @@ function String-Pattern-Piramid( $xString = "*", $xLines = 3, $xWidth )
 	}
 
 
-function String-Replicate( [string] $xString, [int] $xTimes )
-	{ return ( $xString * $xTimes )	}
-
-
 
 <#
 String[] stair of pattern
@@ -224,4 +292,20 @@ class VM
 
 
 	}
+
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+#
+#  |W|W|W| * WWW
+#
+
+
+function WWW- { AAA-Functions }
+
+
+function WWW-Info { Invoke-RestMethod -Uri http://ipinfo.io }
+
 

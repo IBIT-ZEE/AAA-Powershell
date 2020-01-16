@@ -11,25 +11,40 @@ Import-Module -Name C:\DAT\PowerShell\AAA\AAA-0-Base.psm1 -Force
 # PREPARE ENVIRONMENT 
 Set-StrictMode -Version 5.0;
 $Host.PrivateData.ErrorForegroundColor="green"
+
+#ASSEMBLIES
 Add-Type -AssemblyName System.Windows.Forms;
+Add-Type -AssemblyName System.Speech
+
 #filter Out-Default {}
 #Remove-Item function:Out-Default
 
 
-$global:AAA = @{};
-
-$global:AAA += `
-	@{
+$global:AAA = @{ 
+	Boot = Get-Date; 
+	Credential = $null;
+	
 	Folders = @{
 		APL = "C:\APL";
 		DAT = "C:\DAT";
 		SYS = "C:\SYS";
 		XXX = "C:\XXX";
 		};
+
+	Mail = @{
+		Account  = "zee@ibit.lan"
+		Password = ""
+		Server   = "proxy0"
+		# SMTP/POP/IMAP 
+		# ?ports 
+		# ?SSL/TLS
+		# HTML-Template
+		# Text-Template
+		}
+	
 	}
 
-$global:AAA.Folders += `
-	@{
+$global:AAA.Folders += @{
 	AAA      = $AAA.Folders.DAT + "\AAA"
 	Links    = $AAA.Folders.DAT + "\#Links"
 	LinksX   = $AAA.Folders.DAT + "\#LinksX"
@@ -39,18 +54,16 @@ $global:AAA.Folders += `
 
 
 # ???REFACTOR $AAA.key.*
-$global:AAAX = `
-	@{
-	Modules = `
-		@{
+$global:AAAX = @{
+	
+	Modules = @{
 		Base   =  $AAA.Folders.DAT + "\PowerShell\AAA\AAA-0-Base.psm1";
 		System =  $AAA.Folders.DAT + "\PowerShell\AAA\AAA-1-System.psm1";
 		Extensions =  $AAA.Folders.DAT + "\PowerShell\AAA\AAA-2-Extensions.psm1";
 		Other  =  $AAA.Folders.DAT + "\PowerShell\AAA\AAA-3-Other.psm1";
 		};
 
-	Keys = `
-		@{  
+	Keys = @{  
 		Left  = 37;
 		Up    = 38;
 		Right = 39;
@@ -61,11 +74,12 @@ $global:AAAX = `
 		End   = 35;
 		};
 
-	Colors = `
-		@{
+	Colors = @{
 		Ink   = $host.ui.RawUI.ForegroundColor;
 		Paper = $host.ui.RawUI.BackgroundColor;
 		};
+
+	Dataset = {};
 
 	}
 
@@ -75,7 +89,7 @@ $global:AAAX = `
 #  AAAX-Fix
 #
 
-function AAA-On()
+function AAA-On-2remove()
 	{
 	#  |A|L|I|AS|
 	Set-Alias Alias		"Get-Alias"			# Alias command
@@ -128,20 +142,33 @@ function AAA-Check()          { return $true }
 
 
 <#
-to be replaced with AAA-Functions
+.SYNOPSIS
+Show all AAA- Namespace funcionality
 #>
 function AAA- { AAA-Functions }
 
 
-
 <#
+.SYNOPSIS
+Present a Text message to the user
+
+.DESCRIPTION
+Accept 
+. a single string
+. a Array of trings
+
+.EXAMPLE
+AAA-Alert "1 22 333"
+
+.EXAMPLE
+AAA-Alert 1, 22, 333
+
+.NOTES
 REFACTOR***
 SIMPLIFY
-
 PSEUDO-FUNCTION-OVERLOAD
-for String and String[]
-if ( $xData -is [array] ) { } else { }
-
+DECORATOR STRING AUTO-CHANGE
+for String and String[] ~> if ( $xData -is [array] ) { } else { }
 #>
 function AAA-Alert( $xData ) 
 	{
@@ -157,16 +184,19 @@ function AAA-Alert( $xData )
 	}
 
 
-<#
-Alias add
-Alias replacer
 
+<#
+.SYNOPSIS
+Alias Add/Replace
 Usually called from profile.ps1
+
+.NOTES
+See also "Profile.ps1"
 #>
 function AAA-Alias 
 	{
 
-	# ADD
+	# LANGUAGE
 	Set-Alias -Scope "global" -Name a -Value Get-alias 
 	Set-Alias -Scope "global" -Name v -Value variables
 
@@ -175,16 +205,31 @@ function AAA-Alias
 	Set-Alias -Scope "global" -Name so -Value Select-Object
 	Set-Alias -Scope "global" -Name wo -Value Where-Object
 
-	Set-Alias -Scope "global" -Name alias -Value Get-alias 
 	Set-Alias -Scope "global" -Name vars  -Value variables
+	Set-Alias -Scope "global" -Name funcs -Value functions
+	Set-Alias -Scope "global" -Name servs -Value services
+	Set-Alias -Scope "global" -Name alias -Value Get-alias
+
+	# AAA-Links
+	Set-Alias -Scope "global" -Name l! -Value links!
+	Set-Alias -Scope "global" -Name lx! -Value linksX!
+	Set-Alias -Scope "global" -Name s! -Value scripts!	
+	Set-Alias -Scope "global" -Name sx! -Value scriptsX!
 
 	# REPLACE
 	Set-Alias -Option AllScope -Scope "global" -Name h -Value AAA-History
-	
+
 	}
 
 
 <#
+.SYNOPSIS
+Returns a Bag/Object
+with .Date=Now() and .Obs properties
+add aditional properties...
+and save as Memory/CSV/JSON/XML/...
+
+.NOTES
 minimum property bag for aaa persistent objects
 use with export/import-clixml 
 or other serialization/persistency method
@@ -194,12 +239,15 @@ function AAA-Bag()
 	return `
 		@{
 		Date = Get-Date;
-		Obs = ""	
+		Obs = "";
 		}
 	
 	}
 
 
+<#
+
+#>
 function AAA-Classes
 	{
 	# special case list functions
@@ -228,21 +276,29 @@ function AAA-Comments( [string]$xName )
 
 
 <#
+Credential grab
+#>
+function AAA-Credential
+	{
+	if ( $null -eq $AAA.Credential ) 
+		{ $AAA.Credential = Get-Credential };
+
+	return $AAA.Credential;
+	}
+
+
+
+<#
 List all AAA-* functions
 >AAA-Scripts
 #>
 function AAA-Functions
 	{
 	$x = ( Get-PSCallStack )[1].FunctionName
-	Get-Command ( "{0}-*" -f $x ) -CommandType function
-	
-	"`n"
-
-	$x = "*$x*"
-	Get-Command $x -CommandType function
-	Get-Command $x -CommandType cmdlet
-	Get-Command $x -CommandType alias
+	Get-Command -CommandType function -Name ( "{0}*" -f $x )
+	""
 	}
+
 
 
 # INJECT GROUP-MARKERS IN A SIMPLE ARRAY
@@ -290,20 +346,36 @@ function AAA-Groupness( $xGroups )
 	} 
 
 
-function AAA-Help
+
+<#
+Get Comments sitting before function code
+Regex 
+. find >\n\s*function\s+$name\s+(
+. then backsearch for \n\s*<
+
+#>
+function AAA-Help( $xItem )
 	{
 	AAA-Warn "Get Comments sitting before function code"
+
+	Get-Content function:\$xItem
 	}
 
 
 <#
 
+type some chars and use F8 to search
 #>
 function AAA-History( $xMatch )
 	{
 	return (Get-History | Where-Object { $_.CommandLine -match $xMatch } )
 	}
 
+
+<#
+
+type some chars and use F8 to search
+#>
 function AAA-HistoryX( [string]$xMatch = "." ) 
 	{ 
 	Get-History `
@@ -346,33 +418,18 @@ function AAA-List ( )
 	}
 
 
+<#
+if self-command ends with "-" list all siblings
+log <command> + <args> to !!!!LOGS/AAA-Run.log
 
-	# if self-command ends with "-" list all siblings
-	# log <command> + <args> to !!!!LOGS/AAA-Run.log
-	#
-	function AAA-Log( [ String[] ]  $x ) 
+#>
+function AAA-Log( [ String[] ]  $x ) 
 	{
 	Clear-Host
 	AAA-Logo
 	"`n"
 
-	# $xCaller[2].invocationinfo.mycommand ?parameters ?...
-	$xCaller = (Get-PSCallStack)
-	# $xCaller = ( Get-PSCallStack )[1].FunctionName;
-
-	# <aaa-log.cmd>
-	# if "%~1"=="" aaa-main %~f0
-	#
-	# :MAIN
-	#       echo ERRORLEVEL%errorlevel% ~ %date%-%time% ~ %cd% >> c:\xxx\!!!!LOGS\aaa-run.log
-	#       echo %* >> c:\xxx\!!!!LOGS\aaa-run.log
-	#       exit /b
-	#
-	# :OBS
-	#       aaa-log.cmd
-	#               Log %errorlevel% ~ %date%-%time% ~ %cd%
-	#               and %*
-	#               to  aaa-run.log in c:\xxx\!!!!LOGS
+	# $xCaller = (Get-PSCallStack)
 	}
 
 
@@ -438,6 +495,10 @@ Class AAA_Menu
 	$xInk   = $global:AAAX.Colors.Ink;
 	$xPaper = $global:AAAX.Colors.Paper;
 
+	# Globals
+	$UI = $global:host.ui.RawUI;
+	$AAAX =  $global:AAAX;
+
 
 	# DISPLAY | WAIT-FOR-KEY | ...
 	Go()
@@ -468,30 +529,48 @@ Class AAA_Menu
 		$xMax = $this.xGroups.Length;
 
 		# GROUPS DISPLAY
-		for( $x = 0; $x -lt $xMax; $x++ )
+		for( $xGroupIx = 0; $xGroupIx -lt $xMax; $xGroupIx++ )
 			{
-			if ( $this.xGroupsX[ $x ] ) { Write-Host $this.xGroupsX[ $x ] }
+			#
+			if ( $this.xGroupsX[ $xGroupIx ] ) 
+				{ Write-Host $this.xGroupsX[ $xGroupIx ] }
 
-			$xRangeLo = $this.xGroups[ $x ];
-			$xRangeHi = if ( $x -lt ($xMax-1) ) { $this.xGroups[ $x + 1 ] } else { $this.xCount };
+			# get group limit low-high element index
+			$xRangeLo = $this.xGroups[ $xGroupIx ];
+
+			$xRangeHi = `
+				if ( $xGroupIx -lt ($xMax-1) ) 
+					{ $this.xGroups[ $xGroupIx + 1 ] } 
+				else 
+					{ $this.xCount };
 
 			# OPTIONS/GROUPS DISPLAY
-			for( $xx = $xRangeLo; $xx -lt $xRangeHi; $xx++ )
+			for( $xOptionIx = $xRangeLo; $xOptionIx -lt $xRangeHi; $xOptionIx++ )
 				{
-				if ( $xx -ne $this.xIndex ) 
+				$xOptionTx = $this.xOptions[ $xOptionIx ];
+
+				# prevent text from break line?
+				if ( $this.UI.CursorPosition.X + $xOptionTx.Length -gt $this.UI.WindowSize.Width )
+					{ Write-Host ""; }
+
+				# render non-selected options
+				if ( $xOptionIx -ne $this.xIndex ) 
 					{
-					Write-Host -NoNewLine $this.xOptions[ $xx ];
+					Write-Host -NoNewLine $xOptionTx;
 					}
 				else 
 					{
+					# render Selected option
 					$global:host.ui.RawUI.ForegroundColor = $global:AAAX.Colors.Paper;
 					$global:host.ui.RawUI.BackgroundColor = $global:AAAX.Colors.Ink;
-					Write-Host -NoNewline $this.xOptions[ $xx ];
+					Write-Host -NoNewline $xOptionTx;
 					$global:host.ui.RawUI.ForegroundColor = $global:AAAX.Colors.Ink;
 					$global:host.ui.RawUI.BackgroundColor = $global:AAAX.Colors.Paper;									
 					}
+
 				Write-Host -NoNewLine " ";
 				}
+
 			Write-Host "`n";
 			}
 		}
@@ -638,76 +717,150 @@ function AAA-ProgressFake( $xMS = 1 )
 
 
 <#
-Self lister for AAA-* auto-discovery
->AAA-Functions
-Folder to seach for sibblings are taken from file fullname
+get 1st line comment 
+
 #>
-function AAA-Scripts
+function AAA-Script-Comment( [string]$xScript )
 	{
+	# read file 1st line
+	$xLine = ( Get-Content -Path $xScript -First 1 );
 
-	# Get current script name
-	# the name of the script that called this function PSCallStack[1]
-	# PSCallStack[0] is this module name
-	$xScript = (Get-PSCallStack)[1].ScriptName
-	
-	# Current folder "List-Here" mode
-	# other option would be to hardire to AAA.ScripsX
-	$xFolder = $xScript | Split-Path -Parent
-	$xName   = $xScript | Split-Path -Leaf
-	$xFiles  = $xName.ToLower().Replace( ".ps1", "" )
-
-	# Extensions to treat
-	$xData = @( 
-		@{ id="Powershell"; Extension="ps1" }, 
-		@{ id="Batch";      Extension="cmd" } 
-		)
-
-	foreach( $e in $xData )
-		{
-		$x = Get-ChildItem -Path ( "$xFolder\$xFiles*.$($e.Extension)" )
-
-		# if not items skip titles
-		if ( $x -eq $null ){ continue; }
-
-		$xTitle = "$($e.id)/*.$($e.Extension)";
-		$xTitle;
-		( "-" * $xTitle.Length );
-		$x | ForEach-Object { "`t{0}" -f $_.BaseName }
-		""
-		}
-	
+	#cut comment symbol
+	return $xLine.Substring( $xLine.IndexOf( " " ) +1 );
 	}
-
-
-
-	Get-ChildItem -Path C:\DAT\#ScriptsX\*-.cmd -Name
 
 
 <#
-Special *- and *-- scripts
+Get <help>...</help> text inside the script
+#>
+function AAA-Script-Help( [string]$xScript )
+	{
+	$xData = Get-Content -Path $xScript
+
+	# scan for <help> (.*) </help>
+	# ?-regex
+	#
+
+	}
+
+
+
+<#
+Self lister for AAA-* auto-discovery
+>AAA-Functions
+Folder to seach for sibblings are taken from file fullname
++
+DOS/.cmd Powershell/.ps1 Python/.py PERL/.pl PHP/.php ...
+#>
+function AAA-Script-List
+	{
+
+	# If invoked from script
+	# PSCallStack element #1 is the caller Script metadata
+	$xScript = (( Get-PSCallStack)[ 1 ]).ScriptName;
+
+	$xFolder = $xScript | Split-Path -Parent
+	$xNameX  = $xScript | Split-Path -Leaf
+	$xName   = $xNameX.ToLower().Replace( ".ps1", "" )
+
+	# "^x.*.xxx$" 
+	# adding strings with '+' gave some strage results
+	# so the option by '-f'
+	$xData = @(
+		@( 'Batch/.cmd'     , ( '^{0}.*\.cmd$' -f $xName ) ),
+		@( 'Powershell/.ps1', ( '^{0}.*\.ps1$' -f $xName ) )
+		)
+
+	# Get all files 
+	# from the folder where the invoking script reside
+	$xAll = Get-ChildItem -Path $xFolder
+	$xTotal = $xAll.Length;
+
+	For( $x=0; $x -lt $xData.Length; $x++ )
+		{
+		$xTitle = $xData[ $x ][ 0 ];
+		$xMatch = $xData[ $x ][ 1 ];
+
+		# QUIRK*** force it into an System.Array
+		$xFiles = @();
+		$xFiles += $xAll | Where-Object { $_.Name -match $xMatch }
+
+		# ATT*** @() is not $null
+		# if no matches skip to next iteraction
+		if ( $xFiles.Length -eq 0 ) { Continue }
+
+		$xCount = $xFiles.Length;
+
+		$xString = "$xTitle ($xCount/$xTotal)";
+		$xString;
+		String-Replicate "-" $xString.Length;
+
+		# ***REFACTOR File-Infoline( xFileInfo ) Name/Size/Age/Updated/Attrs ?owner
+		$xFiles | `
+			ForEach-Object `
+				{ `
+				String-Edge $_.BaseName `
+				( AAA-Script-Properties $_.FullName )`
+				};
+
+		""
+
+		}	
+
+	}
+
+
+
+<#
+Self lister for AAA-Scripts .cmd/.ps1 of the form *- *--
+1st line comment is short description
+:OBS is multiline help
 
 #>
-function AAA-ScriptsX
+function AAA-Script-ListX( [string]$xMark )
 	{
-	$xFiles = Get-ChildItem -Path C:\DAT\#ScriptsX\*-.cmd -Name
 	
+	# REFACTOR*** throw to soft-fail...
+	if ( $null -eq $xMark ) { throw "´`n`n AAA-ScriptsX $xMark is null...`n`n" }
+	
+	$xFolder = $AAA.Folders.ScriptsX;
+	$xChar = $xMark[0];
+
+	# "^x[^x].*.xxx$"  for .cmd/.ps1
+	# "^.*[^x]x.xxx$"  for .cmd/.ps1
+
+	$xData = @(
+		@( 'Batch/.cmd -*'     , ( '^{0}[^{1}].*\.cmd$' -f $xMark, $xChar ) ),
+		@( 'Batch/.cmd *-'     , ( '^.*[^{1}]{0}\.cmd$' -f $xMark, $xChar ) ),
+		@( 'Powershell/.ps1 -*', ( '^({0}|{0}[^{1}].*)\.ps1' -f $xMark, $xChar ) ),
+		@( 'Powershell/.ps1 *-', ( '^.*[^{1}]{0}\.ps1$' -f $xMark, $xChar ) )		
+		)
+
+	File-List $xData $xFolder;
 	}
 
 
-function AAA-Test- { AAA-Functions }
 
 
-function AAA-Test-Code( $x1="aaa111", $x2="bbb222", $x3=333, $x4=444 ) 
+<#
+String of Size + Created + Updated-Span + Attrs
+#>
+function AAA-Script-Properties( [string]$xScript ) 
 	{
-	if ( $null -eq $x1 ){ $x1 = 111 }
-	if ( $null -eq $x2 ){ $x2 = 222 }
-	
-	$x1
-	$x2
-	""
-	$x3;
-	$x4;
+	# Read File-Properties struncture
+	$xProps = Get-ItemProperty $xScript;
+
+	# Size/Created/Updated-Span/attrs
+	$xData = `
+		"{0} {1} {2}" -f `
+			( Math-Bytes $xProps.Length ), `
+			( Date-Agely $xProps.LastWriteTime ), `
+			( Get-Date -Date $xProps.CreationTime -Format "yyyy.MM.dd" );
+
+	return $xData;
 	}
+
+
 
 
 
@@ -735,6 +888,52 @@ function AAA-Random( [int]$xLo = [int]::MaxValue , [int]$xHi = [int]::MinValue )
 	$xHi++;
 
 	return Get-Random -Minimum $xLo -Maximum $xHi
+	}
+
+
+
+<#
+Verify and correct a splatter from supplied parameters...
+AAA-Splat first argument is always the Operational-Class type
+so static/shared constructor can be invoked
+pass a template like @{ [oType], p1, p2 }
+pass parameter data like  @{ [AV], "c:\" }
+
+validate [oType] or get [oType]::Active (default)
+
+AV-Path .......... get from default/AV-Active
+AV-Path o ........ get from designed object
+AV-Path o path ... set in designed object
+AV-Path path ..... set in default/AV-Active
+
+AV-Scan .......... run in default/AV-Active
+AV-Scan o ........ run in designed object
+AV-Scan o path ...
+AV-Scan o ........
+
+$xTemplate @{ x1 = <oType>, ...  }
+$xData     @{ x1 = <oType>, ...  }
+$xResult   @{ x1.key = <object>, ...  }
+
+#>
+function AAA-Splatter( $xTemplate, $xData )
+	{
+	#a
+	#a1 template/arg0 is alaways a type
+	#b2 template restant args determine result @splat
+
+	#b
+	#b1 ?is xData/arg0 -of- xTemplate/arg0 type -then- add to xResult/arg0
+	#b2 !else get AV-Active and add to xResult/arg0
+	#b3 !no default/active ???ERR-or-create???
+
+	#c/loop-consume-args
+	#c1 ?is xData/argN -of- xTemplate/argN type -then- add to xResult/argN
+	#c2 !else ERR/Fail
+
+	#d
+	#d1 return xResult splat
+	
 	}
 
 
@@ -952,6 +1151,7 @@ function Array-Sort( $xArray )
 	}
 
 
+
 <#
 Drop repetead elements
 first fount elements are maintainded
@@ -962,6 +1162,183 @@ function Array-Unique( $xArray )
 	return [LINQ.Enumerable]::Distinct( [object[]] $xArray )
 	}
 
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#
+#  |B|Y|T|E|S|
+#
+
+
+<#
+#>
+function bytes- { AAA-Functions }
+
+
+<#
+#>
+function bytes-xxx 
+	{ 
+	# to text
+	$Bytes = [System.IO.File]::ReadAllBytes($Path)
+	[System.Convert]::ToBase64String($Bytes)	
+
+	# to binary
+	$Bytes = [System.Convert]::FromBase64String($Text)
+	[System.IO.File]::WriteAllBytes($OutputPath, $Bytes)
+
+	}
+
+
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#
+#  |D|A|T|E|
+#
+
+<#
+#>
+function Date- { AAA-Functions }
+
+
+
+<#
+return a AAA-TimespanX (+Years +Months)
+#>
+function Date-Age( [datetime]$xOld, [datetime]$xNew = (Get-Date) )
+	{
+	return ( Date-Respan ( $xNew - $xOld ) ); 
+	}
+
+
+
+<#
+Age string
+#>
+function Date-Aged( [datetime]$xOld, [datetime]$xNew = (Get-Date) )
+	{
+	[timespan]$xAge = $xNew - $xOld;
+
+	# REFACTOR***
+	# AAA.Dates.Shorttext/Longtext
+	# $xNames  = @( "dias", "horas", "minutos", "segundos" )
+	$xNames = @( "d:", "h:", "m:", "s" )
+
+	if ( $xAge.Days    ) { $x += "{0:000}{1}" -f $xAge.Days   , $xNames[0] }
+	if ( $xAge.Days    ) { $x += "{0:000}{1}" -f $xAge.Days   , $xNames[0] }
+	if ( $xAge.Hours   ) { $x += "{0:00}{1}"  -f $xAge.Hours  , $xNames[1] }
+	if ( $xAge.Minutes ) { $x += "{0:00}{1}"  -f $xAge.Minutes, $xNames[2] }
+	if ( $xAge.Seconds ) { $x += "{0:00}{1}"  -f $xAge.Seconds, $xNames[3] }
+	
+	return $x
+	
+	}
+
+
+
+<# 
+Simple age of only 1 significant item:
+years|months|days|hours|minutes|seconds
+#>
+function Date-Agely( [datetime]$xOld, [datetime]$xNew = (Get-Date) )
+	{ 
+	[timespan]$xAge = $xNew - $xOld;
+
+	$xSpan = Date-Respan $xAge;
+
+	$xAgely = "?";
+
+	if     ( $xSpan.Years   -gt 0 )      { $xAgely = "{0,2}+ Years  " -f $xSpan.Years   }
+	elseif ( $xSpan.Months  -gt 0 )      { $xAgely = "{0,2}+ Months " -f $xSpan.Months  }
+	elseif ( $xSpan.Days    -gt 0 )      { $xAgely = "{0,2}+ Days   " -f $xSpan.Days    }
+	elseif ( $xSpan.Hours   -gt 0 )      { $xAgely = "{0,2}+ Hours  " -f $xSpan.Hours   }
+	elseif ( $xSpan.Minutes -gt 0 )      { $xAgely = "{0,2}+ Mins   " -f $xSpan.Minutes }
+	elseif ( $xSpan.Seconds -gt 0 )      { $xAgely = "{0,2}+ Secs   " -f $xSpan.Seconds }
+	elseif ( $xSpan.Milliseconds -gt 0 ) { $xAgely = "{0,2}+ Millis " -f $xSpan.Milliseconds }
+
+	return $xAgely;
+	}
+
+
+
+<#
+Date for filenames with 16 chars
+timeslice up to 1/100 of a second
+#>
+function Date-Filename ( $xDate = (Get-Date) ) 
+	{
+	return ( get-date $xDate -Format "yyyyMMddHHmmssff" )
+	}
+
+
+
+<#
+input a Timespan
+output a Hashtable with 
+	Years/Months/Days + 
+	Hours/Mins/Secs + 
+	Millisecs
+	dayOfWeek index
+	dayOfYear index
+	WeekOfYear index
+#>
+function Date-Respan( $xTimespan )
+	{
+	# att data.minvalue is 0001.01.01 00:00:00
+	# so subtract year 1
+	$xDate = [datetime]::MinValue + $xTimespan;
+
+	return @{
+		Years	= $xDate.Year -1;
+		Months	= $xDate.Month -1;
+		Days	= $xDate.Day -1; 
+		Hours	= $xDate.Hour; 
+		Minutes	= $xDate.Minute; 
+		Seconds	= $xDate.Second; 
+		Milliseconds = $xDate.Millisecond; 
+		#DayOfWeek
+		#DayOfYear
+		#WeekOfYear
+		# [System.Globalization.DateTimeFormatInfo]::CurrentInfo.Calendar.GetWeekOfYear([datetime]::Now,0,0)
+		# [Globalization.DateTimeFormatInfo]::CurrentInfo.Calendar.GetWeekOfYear( $d,0,0 )
+		# get-date -uformat %V
+		}
+
+	}
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#
+#  |M|A|T|H
+#
+
+
+<#
+Sibblings list...
+#>
+function Math- { AAA-Functions }
+
+
+<#
+Return 
+String with best fit in Bytes/KB/MB/GB/TB/PB/...
+#>
+function Math-Bytes ( $x )
+	{
+	
+	if ($x -gt 1PB ) { return "{0,5:F2} PB" -f ($x / 1PB); }
+	if ($x -gt 1TB ) { return "{0,5:F2} TB" -f ($x / 1TB); }
+	if ($x -gt 1GB ) { return "{0,5:F2} GB" -f ($x / 1GB); }	
+	if ($x -gt 1MB ) { return "{0,5:F2} MB" -f ($x / 1MB); }	
+	if ($x -gt 1KB ) { return "{0,5:F2} KB" -f ($x / 1KB); }	
+
+	return "{0,3} --" -f $x; 
+
+	}
 
 
 
@@ -996,6 +1373,22 @@ function Object-Compare ( [PSObject] $xBase, [PSObject] $xComp )
 
 
 	}
+
+
+<#
+
+#>
+function Object-isNull( $xObject ) { $null -eq $xObject }
+
+
+<#
+Nullternative -or- Alternative to Null...
+#>
+function Object-Nullternative( $xTest, $xAlternative ) 
+	{ 
+	if ( $null -eq $xTest ) { $xTest = $xAlternative } 
+	}
+
 
 
 
@@ -1051,7 +1444,7 @@ function String-Center( $xString, [string]$xFill = ' ', $xSize )
 	$xString = [string]$xString
 
 	# 0/$null = adjust to console 
-	if ( $xSize -eq $null -or $xSize -eq 0 ) 
+	if ( $null -eq $xSize -or $xSize -eq 0 ) 
 		{ $xSize = $Host.UI.RawUI.WindowSize.Width }
 
 	$xLen = $xString.Length;
@@ -1069,6 +1462,33 @@ function String-Center( $xString, [string]$xFill = ' ', $xSize )
 
 function String-Cut( [string] $xString, [int] $xSize ) 
 	{}
+
+
+<#
+returns a sized string 
+composed by 2 other strings as edges
+if no size is supplied console width is assumed
+#>
+function String-Edge( [string]$xLeft, [string]$xRight, $xSize )
+	{
+	if ( $null -eq $xSize ){ $xSize = $Host.UI.RawUI.WindowSize.Width }
+
+	$xSize1 = $xLeft.Length;
+	$xSize2 = $xRight.Length;
+
+	# s1 > size
+	if ( $xSize1 -gt $xSize ) 
+		{  return ( $xLeft.Substring( 0, $xSize -4  ) + "..." ); }
+
+	# s1 + s2 >  size
+	if ( ( $xSize1 + $xSize2 ) -gt $xSize ) 
+		{  return ( $xLeft + ( " " * ( $xSize - $xSize1 ))) }
+	
+	#s1 + s2 < size
+	return $xLeft + ( " " * ( $xSize - $xSize1 - $xSize2 )) + $xRight; 
+
+	}
+
 
 
 <#
@@ -1105,6 +1525,25 @@ function String-Invert( $xString )
 	return $xStrings
 
 	}
+
+
+
+<#
+	REFACTOR*** 
+	?force excess lenght and cut?? 
+	for composed strings
+#>
+function String-Replicate `
+	(
+	[string] $xString, 
+	[int] $xSize = $Host.UI.RawUI.WindowSize.Width 
+	)
+	{
+	#if ( $null -eq $xSize ){ $xSize = $Host.UI.RawUI.WindowSize.Width }
+	$xTimes = [int]( $xSize / $xString.Length );
+	return $xString * $xTimes;
+	}
+
 
 
 

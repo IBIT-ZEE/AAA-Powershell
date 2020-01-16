@@ -531,38 +531,44 @@ pickupBanDuration
 ################################################################################
 #Loop!
 Register-WMIEvent -Query $query -sourceidentifier $SinkName
+
 do 
 	{ #bedobedo
-	$new_event = wait-event -sourceidentifier $SinkName  
-	$TheEvent = $new_event.SourceeventArgs.NewEvent.TargetInstance
-	select-string $RegexIP -input $TheEvent.message -AllMatches | foreach { foreach ($a in $_.matches) {
-		$IP = $a.Value 		
-		
-		if ($SelfList -match $IP) 
-			{ debug "Whitelist of self-listed IPs! Do nothing. ($IP)" }
-			else 
-			{	
-			$RecordID = $TheEvent.RecordNumber
-			$EventDate = WMIDateStringToDateTime($TheEvent.TIMEGenerated)
-			$Entry.Add($RecordID, @($IP,$EventDate))
+	$new_event = wait-event -sourceidentifier $SinkName
 
-			$IPCount = 0
-			foreach ($a in $Entry.Values) 
-				{ if ($IP -eq $a[0]) { $IPCount++} }
-	
-			debug "$($TheEvent.LogFile) Log Event captured: ID $($RecordID), IP $IP, Event Code $($TheEvent.EventCode), Attempt #$($IPCount). "							
-			
-			if ($IPCount -ge $CHECK_COUNT) 
-				{ 
-				jail_lockup $IP		
-				clear_attempts $IP
-				} 
+	$TheEvent = $new_event.SourceeventArgs.NewEvent.TargetInstance
+
+	select-string $RegexIP -input $TheEvent.message -AllMatches `
+		| foreach { 
+			foreach ($a in $_.matches) 
+				{
+				$IP = $a.Value 		
 				
-			clear_attempts
-			unban_old_records
+				if ($SelfList -match $IP) 
+					{ debug "Whitelist of self-listed IPs! Do nothing. ($IP)" }
+					else 
+					{	
+					$RecordID = $TheEvent.RecordNumber
+					$EventDate = WMIDateStringToDateTime($TheEvent.TIMEGenerated)
+					$Entry.Add($RecordID, @($IP,$EventDate))
+
+					$IPCount = 0
+					foreach ($a in $Entry.Values) 
+						{ if ($IP -eq $a[0]) { $IPCount++} }
+			
+					debug "$($TheEvent.LogFile) Log Event captured: ID $($RecordID), IP $IP, Event Code $($TheEvent.EventCode), Attempt #$($IPCount). "							
+					
+					if ($IPCount -ge $CHECK_COUNT) 
+						{ 
+						jail_lockup $IP		
+						clear_attempts $IP
+						} 
+						
+					clear_attempts
+					unban_old_records
+					}
+				}
 			}
-	}
-	}
 	
 	Remove-event  -sourceidentifier $SinkName  
 	
