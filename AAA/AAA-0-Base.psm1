@@ -1252,20 +1252,17 @@ if only 1 date entered assume !NOW as later date...
 function Date-Aged( [datetime]$xOld, [datetime]$xNew = (Get-Date) )
 	{
 	[timespan]$xAge = $xNew - $xOld;
+	$xSpan = Date-Respan $xAge;
 
 	# REFACTOR***
 	# AAA.Dates.Shorttext/Longtext
-	# $xNames  = @( "dias", "horas", "minutos", "segundos" )
-	$xNames = @( "d:", "h:", "m:", "s" )
+	# $xNames  = @( "anos", "dias", "horas", "minutos", "segundos" )
+	# $xNames = @( "Y:", "M:", "D:", "h:", "m:", "s" )
 
-	if ( $xAge.Days    ) { $x += "{0:000}{1}" -f $xAge.Days   , $xNames[0] }
-	if ( $xAge.Days    ) { $x += "{0:000}{1}" -f $xAge.Days   , $xNames[0] }
-	if ( $xAge.Hours   ) { $x += "{0:00}{1}"  -f $xAge.Hours  , $xNames[1] }
-	if ( $xAge.Minutes ) { $x += "{0:00}{1}"  -f $xAge.Minutes, $xNames[2] }
-	if ( $xAge.Seconds ) { $x += "{0:00}{1}"  -f $xAge.Seconds, $xNames[3] }
-	
-	return $x
-	
+	return `
+		"Y{0:00}:M{1:00}:D{2:00}:h{3:00}:m{4:00}:s{5:00}" `
+		-f `
+		$xSpan.Years, $xSpan.Months, $xSpan.Days, $xSpan.Hours, $xSpan.Minutes, $xSpan.Seconds
 	}
 
 
@@ -1281,9 +1278,7 @@ if only 1 date entered assume !NOW as later date...
 function Date-Agely( [datetime]$xOld, [datetime]$xNew = (Get-Date) )
 	{ 
 	[timespan]$xAge = $xNew - $xOld;
-
 	$xSpan = Date-Respan $xAge;
-
 	$xAgely = "?";
 
 	if     ( $xSpan.Years   -gt 0 )      { $xAgely = "{0,2}+ Years  " -f $xSpan.Years   }
@@ -1398,9 +1393,10 @@ function Math-Bytes ( $x )
 	if ($x -gt 1TB ) { return "{0,5:F2} TB" -f ($x / 1TB); }
 	if ($x -gt 1GB ) { return "{0,5:F2} GB" -f ($x / 1GB); }	
 	if ($x -gt 1MB ) { return "{0,5:F2} MB" -f ($x / 1MB); }	
-	if ($x -gt 1KB ) { return "{0,5:F2} KB" -f ($x / 1KB); }	
+	if ($x -gt 1KB ) { return "{0,5:F2} KB" -f ($x / 1KB); }
 
-	return "{0,3} --" -f $x; 
+	# return "{0,3} --" -f $x; 
+	return "{0,5:F2} KB" -f ($x / 1KB);
 
 	}
 
