@@ -224,6 +224,22 @@ function AAA-Alias
 
 <#
 .SYNOPSIS
+If no asterisks contained in $x
+then decorate $x with Start+End Asterisk
+
+if $x is null then return "*"
+
+*Prevent: if only numbers passed they are convert to string
+#>
+function AAA-Asteriskator( [string]$x = "*" ) 
+	{
+	if ( $x.Contains( "*" ) ){ return $x } else { return "*" + $x + "*" } 
+	}
+
+
+
+<#
+.SYNOPSIS
 Returns a Bag/Object
 with .Date=Now() and .Obs properties
 add aditional properties...
@@ -245,7 +261,9 @@ function AAA-Bag()
 	}
 
 
+
 <#
+.SYNOPSIS
 
 #>
 function AAA-Classes
@@ -258,11 +276,16 @@ function AAA-Classes
 	}
 
 
-# Get the comments present immediatly above the function
-# up to the end of the previous one
-# acts as a quick-help...
-# +
-# ATT*** NOTE*** QUIRKS*** ...
+
+
+<#
+.SYNOPSIS
+Get the comments present immediatly above the function
+up to the end of the previous one
+acts as a quick-help...
++
+ATT*** NOTE*** QUIRKS*** ...
+#>
 function AAA-Comments( [string]$xName )
 	{
 	# ?searh in $functions:\*
@@ -1197,15 +1220,21 @@ function bytes-xxx
 #
 #  |D|A|T|E|
 #
-
 <#
+.SYNOPSIS
+Date functions
+
 #>
 function Date- { AAA-Functions }
 
 
 
 <#
+.SYNOPSIS
 return a AAA-TimespanX (+Years +Months)
+from 1 or 2 input dates... 
+if only 1 date entered assume !NOW as later date...
+
 #>
 function Date-Age( [datetime]$xOld, [datetime]$xNew = (Get-Date) )
 	{
@@ -1215,7 +1244,10 @@ function Date-Age( [datetime]$xOld, [datetime]$xNew = (Get-Date) )
 
 
 <#
-Age string
+.SYNOPSIS
+Age string from 1 or 2 dates
+if only 1 date entered assume !NOW as later date...
+
 #>
 function Date-Aged( [datetime]$xOld, [datetime]$xNew = (Get-Date) )
 	{
@@ -1239,8 +1271,12 @@ function Date-Aged( [datetime]$xOld, [datetime]$xNew = (Get-Date) )
 
 
 <# 
-Simple age of only 1 significant item:
-years|months|days|hours|minutes|seconds
+.SYNOPSIS
+Simple age between 2 dates
+if only 1 date entered assume !NOW as later date...
+
+[years [months [days [hours [minutes [seconds]]]]]]
+
 #>
 function Date-Agely( [datetime]$xOld, [datetime]$xNew = (Get-Date) )
 	{ 
@@ -1264,6 +1300,7 @@ function Date-Agely( [datetime]$xOld, [datetime]$xNew = (Get-Date) )
 
 
 <#
+.SYNOPSIS
 Date for filenames with 16 chars
 timeslice up to 1/100 of a second
 #>
@@ -1275,6 +1312,7 @@ function Date-Filename ( $xDate = (Get-Date) )
 
 
 <#
+.SYNOPSIS
 input a Timespan
 output a Hashtable with 
 	Years/Months/Days + 
@@ -1307,6 +1345,32 @@ function Date-Respan( $xTimespan )
 		}
 
 	}
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#
+#  |M|A|P
+#
+
+
+<#
+.SYNOPSIS
+Diverse Mappers like 
+	Map01YN ....... 0->No      ; 1=Yes
+	Map01TF ....... 0->False   ; 1=True
+	MapTFYN ....... $False->No ; True->Yes
+
+	MapAB -> Array1 to Array2
+
+	MapNT -> Number-to-Text (Extense)
+
+#>
+function Map- { AAA-Functions }
+
+
+function Map01YN( $x01        ) { if( $x01 -eq 0 ){ "No" } else { "Yes" }  }
+function Map01TF( $x01        ) { if( $x01 -eq 0 ){ "False" } else { "True" }  }
+function MapTFYN( $xTrueFalse ) { if( $xTrueFalse -eq $False ){ "No" } else { "Yes" }  }
 
 
 

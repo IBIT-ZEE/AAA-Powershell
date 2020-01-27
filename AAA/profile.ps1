@@ -67,12 +67,13 @@ function Prompt() {
 <#
 COMMANDS
 #>
-function functions( $x ){ Get-ChildItem -Path function:\ | Where-Object { $_.name -match $x } | Format-Table -AutoSize }
-function code( $x ) { Get-Content -path function:$x }
-function delete( $x ) { Remove-Variable -name $x -scope global }
+function functions( $x ) { Get-ChildItem -Path function:\ | Where-Object { $_.name -match $x } | Format-Table -AutoSize }
+function code( $x )      { Get-Content -path function:$x }
+function delete( $x )    { Remove-Variable -name $x -scope global }
+function grid( $x )    { $x | Out-GridView -PassThru }
 function history( [string]$xMatch = "." ) { AAA-History $xMatch }
 function historyX( [string]$xMatch = "." ) { AAA-HistoryX $xMatch;	}
-function help( $xItem ) { Get-Help -Name $xItem -ShowWindow }
+function help( $xItem )  { Get-Help -Name $xItem -ShowWindow }
 function path( [string]$x ){ where.exe $x }
 function type( $x ) { $x.GetType() | Format-Table -AutoSize }
 function typeX( $x ) { $x.GetType() | Format-List * }
