@@ -26,4 +26,7 @@ c:\Windows\System32\WindowsPowerShell\v1.0 ~> profile.ps1
 * sometimes link goes wheird if altering folder
 
 
+// GIT
+?sslverify ?false
+
 
