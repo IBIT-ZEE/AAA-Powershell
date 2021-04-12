@@ -6,140 +6,94 @@
 Set-StrictMode -Version 5;
 
 
+
+
+
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 #
-#  |I|P| * Network
+#  |D|N|S| * Domain Name System
 #
+# 
+
+<#
+.SYNOPSIS
+DNS protocol routines
+#>
+function DNS- { AAA-Functions }
 
 
-function IP- { AAA-List }
 
 
-# GET TCP/IP DEFAULT GATEWAY
-function IP-Gateway
+<#
+.SYNOPSIS
+Get Address from host name (standard DNS lookup)
+#>
+function DNS-Address( $xName ) 
 	{
-	$x = Get-NetRoute -DestinationPrefix "0.0.0.0/0";
-	return $x[0].NextHop;
-	}
-
-
-
-
-function IP-Scan( [string] $xIP )
-    {
-	# get ip network from Gateway 
-	if ( $xIP -eq "" ) { $xIP = IP-Gateway }
-
-	# get the first 3 octets + "."
-	# is valid IP or break with error
-	$xMatch = $xIP -match "^\d{1,3}\.\d{1,3}\.\d{1,3}\."
-	if ( ! $xMatch ){ return "$xIP is an invalid IPv4 format..." }
-	$xNet = $Matches[0]
+	# if FAIL... return $null
+	try { $x = [System.Net.DNS]::GetHostByName( $xName )  } catch { return $null }
+	# [System.Net.DNS]::GetHostEntry() 
 	
-	"Testing $($xNet)<?> for 255 addresses..."
-
-	$xTest = $null
-	$xValids = @()
-
-    for( [int] $x = 1; $x -lt 255; $x += 1 )
-        {
-		$xIP = $xNet + $x;
-
-        $xTest = `
-            Test-Connection  `
-            	-ErrorAction SilentlyContinue `
-            	-ComputerName $xIP `
-            	-Count 1 `
-				-TimeToLive 1
-				# -Delay 1 
-
-		if ( !$? ) 
-			{ 
-			Write-Host -NoNewline "."; 
-			Continue;
-			}
-		
-		""
-		# $xTest.ProtocolAddress
-		# $xTest.Address
-		$xIP
-
-		$xValids += $xIP
-		# Write-Host "$xTest.Address"     
-		}
-	return $xValids
-    }
-
-
-function IP-ScanX
-	{ "~ nmap -sn- 10.0.0.0" }
-
-
-# WOL
-# The magic packet is a broadcast frame 
-# containing anywhere within its payload 
-# 6 bytes of all 255 ( FF FF FF FF FF FF )
-# followed by 16 repetitions 
-# of the target computer MAC address ( 48-bit)
-# in a total of 102 bytes.
-function IP-WOL( $xMAC ) 
-	{
-
-	$xMAC = $xMAC.ToUpper();
-	$xMAC = $xMAC.Replace( ":", "-" );
-	$xMAC = [ Net.NetworkInformation.PhysicalAddress ]::Parse( $xMAC ) 
-
-	$xBroadcast = ( [System.Net.IPAddress]::Broadcast )
-	$xPacket =  [ Byte[] ] ( ,0xFF*6 ) + ( $xMAC.GetAddressBytes() * 16 )
-
-	# sender IP:port
-	$xIP = New-Object Net.IPEndPoint $xBroadcast, 9		
-
-
-	$xUDP = New-Object Net.Sockets.UdpClient
-	$xReturn = $xUDP.Send( $xPacket, $xPacket.Length, $xIP )
-
-	$xUDP.Close()
-	$xUDP.Dispose()
-
-	# $x = @($mac.split(":""-") | foreach {$_.insert(0,"0x")})
-	# $target = [byte[]] ( $x[0], $x[1], $x[2], $x[3], $x[4], $x[5] )
-	# $xPacket = [byte[]] (,0xFF * 102)
-	# 6..101 |% { $packet[$_] = $target[($_%6)]}
-	#
-	# .NET framework lib para sockets
-	# $UDPclient.Connect( ( [System.Net.IPAddress]::Broadcast), 4000 )
-# $UDPclient.Send( $packet, $packet.Length )
+	# SUCCESS... we got a name
+	# return the object with name and other information
+	return $x
 	}
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-#
-#  |P|O|R|T| * Network
-#
 
-function Port- { AAA-List }
+<#
+.SYNOPSIS
+DNS reverse query
 
-
-function Port-Scan {  }
-
-
-function Port-Read {  }
+#>
+function DNS-AddressX( $xName )
+	{ 
+	return [System.Net.Dns]::GetHostAddresses( $xName )
+	}
 
 
-function Port-Write {  }
+
+<#
+.SYNOPSIS
+Get Host name from Address 
+(Reverse lookup)
+
+.NOTES
+[System.Net.DNS]::GetHostByAddress()
+[System.Net.DNS]::GetHostEntry() do not rely on DNS
+
+#>
+function DNS-Host( $xIP ) 
+	{
+	# if FAIL... return $null
+	try { $x = [System.Net.DNS]::GetHostByAddress( $xIP )  } catch { return $null }
+	# [System.Net.DNS]::GetHostEntry() 
+	
+	# SUCCESS... we got a name
+	# return the object with name and other information
+	return $x
+	}
 
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-#
-#  |I|S|C|S|I| * Network
-#
+
+<#
+.SYNOPSIS
+DNS Server set
+
+#>
+function DNS-Server( $xName )
+	{ 
+	Get-DnsClientServerAddress | Out-GridView -title "DNS Serveres" -PassThru
+	}
 
 
-function iSCSI- { AAA-List }
 
-function iSCSI-On {  }
 
-function iSCSI-Off {  }
+
+
+
+
+
 
 
 
@@ -180,6 +134,12 @@ function Software-Uninstall {}
 
 
 
+
+
+
+
+
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 #
 #  |T|T|S| * Text To Speech
@@ -189,43 +149,69 @@ function Software-Uninstall {}
 #		System.Speech.Recognition
 #		System.Speech.AudioFormat
 #
-<#
 
+<#
+.SYNOPSIS
 initialize AAA.TTS
 
-#>
+has a Classs,,,
+TTS-Object will build and return an object...
+a AAA.TTS socket can hold a System-Wide object for resource economy...
 
+#>
 function TTS- { AAA-Functions }
 
-
 <#
-set AAA.TTS
-	.rate
-	.voice
-	.culture
-	...
-#>
-function TTS-Initialize( $xText )
-	{
+.SYNOPSIS
+Class for Text-To-Speech works
 
+#>
+class TTS 
+	{
+	$engine = $null;
+	$text = "";
+
+	Say( $x ){ }
+	Clipboard(){ }
+	Test(){ }
+	
+	<#
+	.SYNOPSIS
+	Select a TTS profile
+	{ voice,  language, culture, rate, pauses, ... }
+	#>
+	Profile( $x ){  }
 	}
 
 
+
+
 <#
+.SYNOPSIS
+builds and returns 
+a AAA/Class TTS object for persistency of work
+
+.NOTES
 
 #>
-function TTS-Speak( $xText )
-	{
-	# if no text 
-	# then get from clipboard
-	if ( $null -eq $xText ){ $xText = Get-Clipboard  }
+function TTS-Object() { return [TTS]::new(); }
 
+
+function TTS-Say( $x = "Nothing..." )
+	{
 	# use AAA.TTS
 	# if AAA.TTS -is $NULL message/GUI
 	$xTTS = [System.Speech.Synthesis.SpeechSynthesizer]::new();
 	$xTTS.Rate = -2;
 
-	$xTTS.SpeakAsync( $xText );
+	[void] $xTTS.SpeakAsync( $x ) ;
+	}
+
+
+function TTS-Clipboard()
+	{
+	$x = Get-Clipboard  
+	TTS-Speak $x;
 	}
 
 
@@ -237,9 +223,18 @@ function TTS-Test
 	$xTTS = [System.Speech.Synthesis.SpeechSynthesizer]::new();
 	$xTTS.Rate = -2;
 
+	$xTTS.Speak( 
+		"
+		Hello...
+		This routine will state all installed Voices in this device...
+		" 
+		) 
+
+	$x = 0;
 	Foreach ( $xVox in $xTTS.GetInstalledVoices() )
 		{
 		""
+		$xTTS.Speak( ( "{0}{1}" -f ( $x += 1), ( Math-Ordinalex $x ) ) );
 		$xVox.VoiceInfo;
 		$xTTS.Speak( $xVox.VoiceInfo.Name );
 		$xTTS.Speak( $xVox.Voiceinfo.Description );
@@ -250,20 +245,90 @@ function TTS-Test
 
 
 
+
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 #
-#  |W|O|L| * Network
+#  |U|R|I| * Universal Resource Indicator
 #
+<#
+.SYNOPSIS
+|U|R|I| * Universal Resource Indicator routines
 
+
+.NOTES
+
+#>
+function URI- { AAA-Functions }
+
+
+<#
+.SYNOPSIS
+Break a URI in Protocol/Domain/Resources
+return object or null
+
+
+.NOTES
+2DO
+expand to recognize local names (no protocol and no TLD)
+expand to get variables ( *?a=1&b=22&... )
+
+#>
+function URI-Break( [string]$xURI )
+	{ 
+	
+	$xResult = @{ Protocol=""; Domain=""; Resource="" }
+
+	# Protocol
+	if ( $xURI -match "^\w+://" ) { $xResult.Protocol = $Matches[0] }
+
+
+	#Domain 
+	$xResult.Domain = `
+		$xURI `
+		-replace ( "^" + $xResult.Protocol ) `
+		-replace "(?<=\.\w*)/.*"
+
+	$xResult.Resource = $xURI -replace ( "^" + $xResult.Protocol + $xResult.Domain  )
+
+
+	return $xResult
+	# if ( $xURI -replace "^http.?://" -replace "(?<=\.\w*)/.*"
+
+	}
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+#
+#  |W|O|L| * Wake-On-LAN
+#
+<#
+.SYNOPSIS
+|W|O|L| * Wake-On-LAN routines
+
+
+.NOTES
+
+#>
 function WOL- { AAA-Functions }
 
 '''
 38-60-77-2A-4F-9D	Demo1
 '''
+
+<#
+.SYNOPSIS
+WOL go---
+
+.NOTES
+
+#>
 function WOL-Go (){}
 
 
-'''
+<#
+.SYNOPSIS
 WOL packet send to an IP address
 usually the broadcast address in a subnet. 
 To use this script, you need to specify the MAC address of the device that you need to wake 
@@ -272,24 +337,20 @@ default UDP port is 9 but using other port number as 7 is not uncommon.
 Specify a different port using the -port parameter.
 The script takes a mac address either separated with -nothing- ":", "-" or "." 
 
+Send a WOL packet to a broadcast address
+	$xMAC is the address of the device that need to wake up
+	$xIP  is the address where the WOL packet will be sent to
+
+.NOTES
 Send-WOL -mac 00:11:32:21:2D:11 -ip 192.168.8.255 -port 7 
 Send-WOL -mac 00-11-32-21-2D-11 -ip 192.168.8.255 -port 7 
 Send-WOL -mac 0011.3221.2D11 -ip 192.168.8.255 -port 7 
 Send-WOL -mac 001132212D11 -ip 192.168.8.255 -port 7 
 Send-WOL -mac 001132212D11 
-'''
+
+#>
 function WOL-Send
 {
-<# 
-  .SYNOPSIS  
-    Send a WOL packet to a broadcast address
-  .PARAMETER mac
-   The MAC address of the device that need to wake up
-  .PARAMETER ip
-   The IP address where the WOL packet will be sent to
-  .EXAMPLE 
-   Send-WOL -mac 00:11:32:21:2D:11 -ip 192.168.8.255 
-#>
 
 [CmdletBinding()]
 param(

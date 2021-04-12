@@ -20,16 +20,6 @@ Set-StrictMode -Version 5;
 
 
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#
-#  |C|O|U|N|T|E|R|S|
-#
-
-function Counters-Table
-	{
-	Get-Counter -ListSet * | Out-GridView -PassThru
-	}
-
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
@@ -53,693 +43,40 @@ See:
 
 
 
-
-
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
-#  |E|V|E|N|T|S|
+#  |E|V|E|N|T|
 #
-#	STORES	~>	Application Security Setup System Forwarded
-#	LOGS	~>	Microsoft, Intel, OpenSSH, Windows Powershell, ...
-#
-# Get-EventLog 
-# Get-WinEvent
 # Get-Event
 #
 #
 <#
-
->zeeLogs.csx
+.SYNOPSIS
+Events triggerd by ...
 
 #>
 function Event- { AAA-Functions }
 
 
 
-<#
-.SYNOPSIS
-Clear logs (Application, System, Security, ...)
-using Clear-EventLog -LogName <log>
-#>
-function Event-Clear()
-	{
-	$xStores = Get-EventLog -List 
-	
-	"Clearing standard logs..."
-	foreach( $e in $xStores )
-		{
-		$e.Log;
-		Clear-EventLog -LogName $e.Log
-		""
-		""
-		}
-
-	}
 
 
 <#
 .SYNOPSIS
-Clear by log
-using .net
-[System.Diagnostics.Eventing.Reader.EventLogSession]
-	::GlobalSession.ClearLog( $e.LogName )
+Ongoing Events
+triggerd by ...
+
 
 #>
-function Event-ClearX()
-	{
-
-	$xLogs = Get-WinEvent -ListLog *
-
-	"Clearing Windows extended logs..."
-	foreach( $e in $xLogs )
-		{
-		$e.LogName;
-		[System.Diagnostics.Eventing.Reader.EventLogSession]::GlobalSession.ClearLog( $e.LogName )
-		}
-	}
-
-
-<#
-.SYNOPSIS
-Clear by stopping log services,~
-and deleting files in ?:\Windows\Logs
-ATT*** to folder owner (?System)
-#>
-function Event-ClearByFiles()
-	{
-	#1 stop event service
-	#2 remove all files in events path
-	#3 start service
-	}
-
-
-
-<#
-.SYNOPSIS
-Clear logs using system "wevtlog.exe" command functionality
-#>
-function Event-ClearByWEvtUtil()
-	{
-	$xLogs = wevtutil.exe el
-	$xLogs | ForEach-Object  {"Clearing...", $_; wevtutil cl $_; "Cleared!`n`n"  }
-
-	# check
-	$xLogs | ForEach-Object  {wevtutil qe $_ }
-	}
-
-
-
-
-<#
-.SYNOPSIS
-?InstanceId 1073748869
-?event id 7045
-#>
-function Event-Get-HiddenPrograms
-	{
-	# Get-EventLog -LogName System -InstanceId 1073748869
-	Get-EventLog -LogName System | Where-Object { $_.EventID -eq 7045 } 
-	}
-
-
-
-<#
-.SYNOPSIS
-Logins
-#>
-function Event-Get-{ AAA-Functions }
-
-
-
-<#
-.SYNOPSIS
-Logins
-#>
-function Event-Get-Logins
-	{
-	# Get-EventLog -LogName System -InstanceId 1073748869
-	# Get-EventLog -LogName System | Where-Object { $_.EventID -eq 7045 } | format-table -Wrap
-	}
-
-
-
-<#
-.SYNOPSIS
-Events Windows Console (.msc)
-#>
-function Event-GUI{ eventvwr.msc }
-
-
-
-
-<#
-.SYNOPSIS
-Show a resume of all logs that have events
-
-#>
-function Event-List()
-	{
-	Get-EventLog -List
-	}
-
-
-
-
-
-<#
-.SYNOPSIS
-
-#>
-function Event-Log- { AAA-Functions }
-
-
-<#
-.SYNOPSIS
-List empty stores
-#>
-function Event-Log-Empty()
-	{
-	Get-WinEvent -ListLog * | Where-Object { $_.RecordCount -eq 0 }
-	}
-
-
-
-<#
-.SYNOPSIS
-List non empty stores
-stores that has at leat 1 event recorded...
-
-#>
-function Event-Log-Filled()
-	{
-	Get-WinEvent -ListLog * | Where-Object { $_.RecordCount -gt 0 }
-	}
-
-
-
-<#
-.SYNOPSIS
-Show a the list of all Windows logs
-
-#>
-function Event-Log-List()
-	{
-	Get-WinEvent -ListLog *
-	}
-
-
-
-<#
-.SYNOPSIS
-Show most recent 'n' events for all stores
-by default last 10 are shown
-
--nogui to bypass grid-view (*to implement)
-#>
-function Event-Newest( [int]$xCount=10, [switch]$nogui ) 
-	{
-	$xStores  = Get-EventLog -LogName *;
-	$xEvents  = @();
-	$xEventsX = @();
-
-	foreach( $e in $xStores )
-	 	{ 
-		$xEvents = `
-			Get-EventLog -LogName $e.Log -Newest $xCount -ErrorAction SilentlyContinue `
-			| Select-Object * ; 
-
-		if ($xEvents -ne $null) { $xEventsX += $xEvents }
-		}
-
-	if ( $nogui ) { $xEventsX }
-
-	$xEventsX | Out-GridView -Title "Events-Newest/$xCount" -PassThru;
-	}
-
-
-<#
-.SYNOPSIS
-Show oldest 'n' events
-by default last 10 are shown
-
-#>
-function Event-Oldest( [int]$x=10 ) 
-	{
-	"***2 IMPLEMENT"
-	}
-
-
-
-<#
-.SYNOPSIS
-Providesrs functionality...
-
-#>
-function Event-Provider- { AAA-Functions }
-
-
-
-<#
-.SYNOPSIS
-Providers functionality...
-
-#>
-function Event-Provider-GUI 
+function Event-List() 
 	{ 
-	Get-WinEvent -ListProvider * | Select-Object * | Out-GridView -Title "Event-Providers" -PassThru
+	"2DO***"
 	}
+ 
 
 
 
-
-
-<#
-.SYNOPSIS
-Stores functionality...
-Application, System, Security, Setup, ...
-#>
-function Event-Store- { AAA-Functions }
-
-
-<#
-.SYNOPSIS
-Last N/10 events (newest)
-from the the Application log
-#>
-function Event-Store-Application-All( ) 
-	{
-	# oldest <n>
-	Get-EventLog -LogName Application
-	}
-
-
-
-
-
-<#
-.SYNOPSIS
-#>
-function Event-Store-Empty( ) 
-	{
-	# oldest <n>
-	Get-EventLog -LogName Application
-	}
-
-
-
-<#
-.SYNOPSIS
-Last N/10 events (newest)
-from the the Application log
-#>
-function Event-Store-Application-First( [int]$x=10 ) 
-	{
-	# oldest <n>
-	Get-EventLog -LogName Application -Newest $x
-	}
-
-
-<#
-First N/10 events (oldest)
-from the the Application log
-#>
-function Event-Store-Application-Last( [int]$x=10 ) 
-	{
-	Get-WinEvent -LogName Application -Oldest -MaxEvents 10
-	# Get-EventLog -LogName Application -Newest $x
-	}
-
-
-
-<#
-.SYNOPSIS
-Events Stores list...
-Application, System, Security, Setup, ...
-#>
-function Event-Store-GUI
-	{ 
-	#TODO
-	#Work in the information to display
-	#get data to show into object[] Log ~> Name, MachineName, ...
-	Get-EventLog -LogName * | Select-Object * | Out-GridView -Title "Event-Stores" -PassThru
-	}
-
-
-
-<#
-.SYNOPSIS
-Events Stores list...
-Application, System, Security, Setup, ...
-#>
-function Event-Store-List 
-	{ 
-	Get-EventLog -LogName *
-	}
-
-
-
-
-function Event-Store-Security-All()
-	{
-	Get-EventLog -LogName Security
-	}
-
-
-
-
-function Event-Store-System-All()
-	{
-	Get-EventLog -LogName System
-	}
-	
-	
 		
-	
-	
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#
-#  |F|I|L|E|
-#
-
-
-function File- { AAA-Functions }
-
-
-
-
-<#
-.SYNOPSIS
-*Moniker ~> File-ACL-Get
-
-#>
-function File-ACL( $xFile )	{ File-ACL-Get $xFile }
-
-
-<#
-.SYNOPSIS
-ACL
-
-#>
-function File-ACL-Get( $xFile )
-	{
-	$xEntity = [System.Security.Principal.NTAccount];
-	# $xEntity = [System.Security.Principal.SecurityIdentifier]; 
-
-	$x = Get-Acl $xPath;
-	$x.GetAccessRules( $true, $true, $xEntity ) 
-
-	# $x.SetAccessRulesProtection( $true, $false ) 
-
-	#	$xSID = $xACL.Access.identityreference 
-	#		.translate -> 'S-1-.*' 
-	#		.isinherited
-
-	}
-
-
-
-	<#
-.SYNOPSIS
-ACL
-
-#>
-function File-ACL-Set( $xFile )
-{
-# $xEntity = [System.Security.Principal.SecurityIdentifier]; 
-
-$x = Get-Acl $xPath;
-# $x.SetAccessRulesProtection( $true, $false ) 
-$xAdmin = [System.Security.Principal.NTAccount]::new( "Administrators" );
-#	$xSID = $xACL.Access.identityreference 
-#		.translate -> 'S-1-.*' 
-#		.isinherited
-
-}
-
-
-
-
-<#
-.SYNOPSIS
-
-$xFile should be an absolute path 
-otherwise will default to the home directory 
-
-#>
-function File-Blocked( [string]$xFile )
-	{
-	$xFile = Resolve-Path $xFile
-	try { [IO.File]::OpenWrite( $xFile ).Close(); $False }	catch { $True }
-	}
-
-
-<#
-.SYNOPSIS
-
-
-#>
-function File-Copy
-	{
-	Get-Command *file* -CommandType function
-	Get-Command *file* -CommandType cmdlet
-	Get-Command *file* -CommandType alias
-	}
-
-
-<#
-.SYNOPSIS
-
-
-#>
-function File-Exists( [string]$xFile )
-	{
-	Test-Path -Path $xFile;
-	}
-
-
-
-<#
-.SYNOPSIS
-
-	???File-Path ???File-Info 
-	.Name
-	.Extension
-	.Parents
-	.Drive
-	.Full
-	?Rights
-	?Owner
-	?Owner
-	?Size
-#>
-
-function File-Info( $xFile = "." )
-	{
-	if ( -not ( Test-Path $xFile ) ){ return $null }
-	if ( Test-Path $xFile -PathType Container ){ return $null }
-
-	$xData = @{ Full=""; Name=""; Extension="";  Path=""; Drive="" }
-
-	# ATT*** Resolve-Path 
-	# can returns collections for wildcards
-	# not a single file
-
-	$x = Split-Path $xFile -Leaf
-	$xData.Name      = $x.Substring( 0, $x.LastIndexOf( "." ) );
-	$xData.Extension = $x.Substring( $x.LastIndexOf( "." ) + 1 );
-
-	$x = Split-Path $xFile -Resolve -Parent
-	$xData.Path  = $x.Substring(2) ;
-	$xData.Drive = $x.Substring(0,2);
-	$xData.Full  = $xData.Drive + "\" + $xData.Path + "\" + $xData.Name + "." + $xData.Extension;
-
-	return $xData;
-	}
-
-
-
-<#
-.SYNOPSIS
-
-List files from folder
-Controled by regex/match
-Display Title and #Count/#All
-+
-***REFACTOR
-list by extension and show size/date/... 
-with sctring-edge <name> <properties>
-#>
-function File-List( $xData, $xFolder = $Home )
-	{
-
-	# get all files to a List<FileInfo>
-	$xAll = Get-ChildItem -Path $xFolder
-	$xTotal = $xAll.Length;
-
-	For( $x=0; $x -lt $xData.Length; $x++ )
-		{
-		$xTitle = $xData[ $x ][ 0 ];
-		$xMatch = $xData[ $x ][ 1 ];
-
-		# QUIRK***
-		# if a single element is returned then is not a System.Array
-		# so force it into an System.Array
-		$xFiles = @();
-		$xFiles += $xAll | Where-Object { $_.Name -match $xMatch }
-
-		# if no matches skip to next iteaction
-		# if ( $null = $xFiles ) { Continue }
-		# former wont work because @() is not $null
-		if ( $xFiles.Length -eq 0 ) { Continue }
-
-		# QUIRK***  
-		# if a single element is returned then is not a System.Array
-		# so force it into an array of 1
-		# if ( $xFiles -isnot [System.Array] ) { $xFiles = ,$xFiles }
-
-		$xCount = $xFiles.Length;
-
-		$xString = "$xTitle ($xCount/$xTotal)";
-		$xString;
-		String-Replicate "-" $xString.Length;
-
-		# ATT*** REFACTOR FOR 
-		# . File-Infoline( xFileInfo ) Name/Size/Age/Updated/Attrs ?owner
-		# . String-Bisection( s1, s2 ) /Trisection( s1, s2, s3 )
-		$xFiles | ForEach-Object { String-Edge $_.BaseName  };
-		""
-
-		}
-	
-	Return
-	}
-
-
-
-
-<#
-.SYMOPSIS
-
-#>
-function File-Path- { AAA-Functions }
-
-
-
-<#
-.SYNOPSIS
-
-0 Invalid
-1 File
-2 Folder
-...
-wildcards
--pathType Container/Leaf
--credentials
-#>
-function File-Path-Type ( $xElement )
-	{
-	# ? is valid path
-	if ( -not ( Test-Path -Path $xElement ) ) { return 0 };
-
-	# ? File/1 or Folder/2
-	if ( Test-Path -Path $xElement -PathType Leaf ) { return 1 }
-
-	# if it is not white... ;-)
-	return 2
-
-	}
-
-
-
-
-<#
-.SYNOPSIS
-
-PSPath/Microsoft.PowerShell.Core\FileSystem::<file>
-PSParentPath/Microsoft.PowerShell.Core\FileSystem::<parent>
-PSChildName/<file>
-PSDrive/<drive>
-PSProvider/Microsoft.PowerShell.Core\FileSystem
-Mode/<???> -a----
-Attributes
-VersionInfo/File + InternalName + OriginalFilename + FileVersion + ...
-BaseName
-Target
-LinkType
-Name
-Length
-DirectoryName
-Directory
-IsReadOnl
-Exists
-FullName
-Extension
-CreationTime + CreationTimeUtc
-LastAccessTime + LastAccessTimeUtc + LastWriteTime + LastWriteTimeUtc
-
-#>
-function File-Properties ( $xFile )
-	{
-	if ( -not ( File-Exists $xFile ) ){ return $null }
-	$x = Get-ItemProperty -Path $xFile
-	return $x;
-	}
-
-
-function File-Read( [string]$xFile )
-	{
-	# collection of string
-	[System.IO.File]::ReadAllBytes( (Resolve-Path $xFile) )
-	}
-
-function File-ReadAsText( [string]$xFile )
-	{
-	# collection of strings
-	# full-path or tries to get file in System32
-	[System.IO.File]::ReadAllText( (Resolve-Path $xFile) )
-	}
-
-function File-ReadAsLines( [string]$xFile )
-	{
-	# collection of strings
-	# same as -> Get-Content -path $xFile
-	# full-path or tries to get file in System32
-	[System.IO.File]::ReadAllLines( (Resolve-Path $xFile) )
-	}
-
-
-
-# Reset file rights and change owner to ?Everyone
-function File-Reset( [string] $x )
-	{
-	
-	}
-
-
-<#
-$x = [system.diagnostics.fileversioninfo]::getversioninfo( <fullpath> )
-
-#>
-function File-Version( $xFile )
-	{
-	
-
-	}
-
-
-function File-Write( [string]$xFile )
-	{
-	# same as ~> Set-Content
-	# full-path or tries to get file in System32
-	try
-		{
-		$stream = [System.IO.StreamWriter]::new( $Path )
-		$data | ForEach-Object{ $stream.WriteLine( $_ ) }
-		}
-	finally
-		{ $stream.close() }
-	}
-
 
 
 
@@ -760,272 +97,6 @@ function Fix-PS1Run
 		-Value '"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -noLogo -ExecutionPolicy unrestricted -file "%1"'
 	}
 
-
-
-
-
-
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#
-#  |F|O|L|D|E|R|
-#
-#
-<#
-.SYNOPSIS
-Folder utilities...
-
-#>
-function Folder- { AAA-Functions }
-
-
-<#
-.SYNOPSIS
-Folder ACL...
-
-#>
-function Folder-ACL-Get( $xFolder )
-	{
-	$xEntity = [System.Security.Principal.NTAccount];
-	# $xEntity = [System.Security.Principal.SecurityIdentifier]; 
-	
-	$xACL = Get-Acl $xFolder;
-	$x.GetAccessRules( $true, $true, $xEntity );
-
-	}
-
-
-function Folder-Go( [string] $x )  
-	{
-
-	}
-
-
-function Folder-Reset( [string] $x )  
-	{
-	
-	}
-
-
-
-
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#
-#  |G|U|I|
-#
-#
-<#
-.SYNOPSIS
-
-GUI Interface functionality...
-
-#>
-function GUI- { AAA-Functions }
-
-
-<#
-State holder
-#>
-class GUI_Window 
-	{
-	$Form = $null;
-	$Body = $null;
-
-	<#
-	1. add component to the Body
-	2. try to style-it
-	#>
-	[System.Windows.Forms.Control] `
-	Add( $xControl ) 
-		{
-		$this.Styler( $xControl );
-		$this.Body.Controls.Add( $xControl );	
-
-		# prevent Fluency...
-		return $xControl;
-		}
-
-	<#
-	
-	#>
-	Show() { $this.Form.ShowDialog(); }
-
-	<#
-	1 get component type
-	2 if no styler available exit
-	3 style the component
-	#>
-	Styler( $xControl ) 
-		{
-		$xControl.Backcolor = `
-			[System.Drawing.Color]::FromArgb( 
-				(Get-Random -Maximum 255), 
-				(Get-Random -Maximum 255), 
-				(Get-Random -Maximum 255) 
-				)
-
-		}
-
-	}
-
-
-<#
-returns a form with hrlders & helpers:
-	.Window ... the OS/Form container
-	.Body ..... the container render area
-	+
-	.Build .... accept a control to reside in form and style-it (.Styler)
-	.Styler ... accept a control and style-it if style available
-
-
-$xWindow.Build $xMenu
-$xWindow.Build $xStatusBar
-
-$xWindow.Styler $xLabel1
-$xWindow.Styler $xTextbox1
-
-#>
-function GUI-Window()
-	{
-	$xWindow = [GUI_Window]::New();
-
-	# FORM
-	$xWindow.Form = [System.Windows.Forms.Form]::New();
-	$xWindow.Form.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Font
-
-	# FLOWLAYOUTPANEL
-	$xWindow.Body = [System.Windows.Forms.FlowLayoutPanel]::New()
-	$xWindow.Body.BackColor = "#FAFE01";
-	$xWindow.Body.Dock = [System.Windows.Forms.DockStyle]::Fill;
-
-	$xWindow.Form.Controls.Add( $xWindow.Body );
-
-	# EVENT MouseWheel Scale
-	$xWindow.Form.add_mousewheel( 
-		{ 
-		$e = [System.Windows.Forms.MouseEventArgs]$_;
-
-		$this.Font = 
-			[System.Drawing.Font]::new( 
-				$this.Font.FontFamily, 
-				$this.Font.Size + ( [System.Math]::Sign( $e.Delta ))  
-				)
-		})
-
-	
-	return $xWindow;
-	}
-
-
-
-<# CONTROLS #>
-function GUI-Button( $xWindow )  { $xWindow.Add( [System.Windows.Forms.Button]::New() ) }
-function GUI-Label( $xWindow )   { $xWindow.Add( [System.Windows.Forms.Label]::New() ) }
-function GUI-Textbox( $xWindow ) { $xWindow.Add( [System.Windows.Forms.Textbox]::New() ) }
-function GUI-Combobox( $xWindow ) { $xWindow.Add( [System.Windows.Forms.Combobox]::New() ) }
-function GUI-Listbox( $xWindow ) { $xWindow.Add( [System.Windows.Forms.Listbox]::New() ) }
-
-
-
-
-
-function GUI-File ( $xFile = "." )
-	{
-	$xDialog = [System.Windows.Forms.OpenFileDialog]::new();
-
-	# ?arg is file or folder??
-	$xType = File-Path-Type $xFile;
-
-	if ( $xType -eq 0 ) { Throw "Invalid path..."  }
-
-	if ( $xType -eq 1 ) 
-		{ $xFolder = Split-Path $xFile -Parent  }
-	else 
-		{ $xFolder = $xFile; $xFile = ""; }
-
-	$xDialog.InitialDirectory = $xFolder;
-	$xDialog.ShowDialog();
-
-
-	return $xDialog.FileNames;
-
-	}
-
-
-function GUI-Message ( $xMessage )
-	{
-	$xDialog = [System.Windows.Forms.MessageBox]::Show( $xMessage  )
-
-	$xDialog = $null;
-	}
-
-
-
-
-function GUI-Message ( [string] $xMessage, [string[]] $xOptions = @('OK') )
-	{
-
-	}
-
-	
-
-function GUI-List ()
-	{
-	
-	}
-
-function GUI-Picker ()
-	{
-	
-	}
-
-
-function GUI-Grid ()
-	{
-	
-	}
-
-
-function GUI-Properties-File( [string] $xFile )
-	{
-
-	if ( -not ( File-Path-Type $xFile -eq 1 ) ) 
-		{ 
-		AAA-Alert "Invalid file path..."; 
-		return; 
-		}
-
-	$xPath   = Resolve-Path -Path $xFile
-	$xFile   = Split-Path   -Path $xPath -Leaf; 
-	$xFolder = Split-Path   -Path $xPath -Parent;
-
-	$xShell   = New-Object -ComObject Shell.Application;
-	$xShellX  = $xShell.NameSpace( $xFolder );
-	$xShellXX = $xShellX.ParseName( $xFile );
-	$xShellXX.InvokeVerb( "Properties" );
-
-	}
-
-
-<#
-
-#>
-function GUI-Properties-Folder( [string] $xFolder )
-	{
-
-	if ( -not ( File-Path-Type $xFolder -eq 2 ) ) 
-		{ 
-		AAA-Alert "Invalid folder path..."; 
-		return; 
-		}
-
-	$xPath   = Resolve-Path -Path $xFolder;
-	$xShell  = New-Object   -ComObject Shell.Application;
-	$xShellX = $xShell.NameSpace( $xPath.ProviderPath );
-	$xShellX.Self.InvokeVerb( "Properties" );	
-	
-	}
 
 
 
@@ -1100,6 +171,565 @@ function List-Save( $xList )
 
 
 
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#
+#  |L|O|G|
+#
+#	STORES	~>	Application Security Setup System Forwarded
+#	LOGS	~>	Microsoft, Intel, OpenSSH, Windows Powershell, ...
+#
+# Get-EventLog 
+# Get-WinEvent
+# Get-Event
+#
+#
+
+<#
+Logs...
+>zeeLogs.csx
+
+Get-EventLog 
+	-logname == -list	~> Stores .entries .retentiondays
+	-newest
+	-before/-after
+	-EntryType
+
+Get-WinEvent
+
+Log-GUI-EventsbBySize
+Log-GUI-EventsbByTime
+Log-GUI-EventsbByOther
+	Get-WinEvent
+		-listlog *
+		| Select-Object -Property `
+			LogName, RecordCount, FileSize, LogFilePath
+			LogName, LastAccessTime, LastWriteTime, OldestRecordNumber
+			LogName, LogType, IsEnabled, LogIsolation, IsClassicLog, ProvidersNames
+
+//TEST/GET-WINEVENT
+Get-WinEvent -ListLog *
+Get-WinEvent -Listprovider * -ErrorAction SilentlyContinue
+(Get-WinEvent -Listprovider "Microsoft-Windows-GroupPolicy" ).events
+$xDate = Get-Date -Hour 0 ; (Get-WinEvent -FilterHashtable @{ logname="security"; starttime = $xDate })[-1] | fl *
+Get-WinEvent -FilterHashtable @{ logname="Microsoft-Windows-GroupPolicy*";  } | Group-Object { $_.id } 
+Get-WinEvent -FilterHashtable @{ providername="Microsoft-Windows-GroupPolicy";  } 
+
+
+#>
+function Log- { AAA-Functions }
+
+
+
+<#
+.SYNOPSIS
+Event Cleanining...
+
+#>
+function Log-Clear-{ AAA-Functions }
+
+
+<#
+.SYNOPSIS
+Clear logs (Application, System, Security, ...)
+using Clear-EventLog -LogName <log>
+
+#>
+function Log-Clear-Basic()
+	{
+	$xStores = Get-EventLog -List
+	
+	Write-Progress -Activity "Clearing Standard Logs..." -Status "." -PercentComplete 0
+
+	$x  = 100 / $xStores.Count
+	$xx = 0
+
+	foreach( $e in $xStores )
+		{
+		Write-Progress `
+			-Activity "Clearing Standard Logs..." `
+			-Status $e.Log `
+			-PercentComplete ( $xx += $x )
+
+		Clear-EventLog -LogName $e.Log;
+
+		Start-Sleep 1;
+		}
+
+	}
+
+
+<#
+.SYNOPSIS
+Clear by log
+using .net
+[System.Diagnostics.Eventing.Reader.EventLogSession]
+	::GlobalSession.ClearLog( $e.LogName )
+
+#>
+function Log-Clear-dotNet()
+	{
+
+	$xLogs = Get-WinEvent -ListLog *
+
+	"Clearing Windows extended logs..."
+	foreach( $e in $xLogs )
+		{
+		$e.LogName;
+		[System.Diagnostics.Eventing.Reader.EventLogSession]::GlobalSession.ClearLog( $e.LogName )
+		}
+	}
+
+
+<#
+.SYNOPSIS
+Clear by stopping log services,~
+and deleting files in ?:\Windows\Logs
+ATT*** to folder owner (?System)
+#>
+function Log-Clear-Files()
+	{
+	#1 stop event service
+	#2 remove all files in events path
+	#3 start service
+	}
+
+
+
+<#
+.SYNOPSIS
+Clear logs using system "wevtlog.exe" command functionality
+#>
+function Log-Clear-WEvtUtil()
+	{
+	$xLogs = wevtutil.exe el
+	$xLogs | ForEach-Object  {"Clearing...", $_; wevtutil cl $_; "Cleared!`n`n"  }
+
+	# check
+	$xLogs | ForEach-Object  {wevtutil qe $_ }
+	}
+
+
+<#
+.SYNOPSIS
+Filter logs... (Filter)
+
+#>
+function Log-Filter-(){ AAA-Functions }
+
+
+
+<#
+.SYNOPSIS
+Filter logs... 
+Query with a composable filter
+
+#>
+function Log-Filter( $xFilter )
+	{ 
+	"***2implement..."
+
+	}
+
+
+<#
+.SYNOPSIS
+Filter by level
+	Critical | Warning | Verbose | Error | Information
+
+
+#>
+function Log-Filter-Level(  )
+	{ 
+	"***2implement..."
+
+	}
+
+
+
+
+
+<#
+.SYNOPSIS
+Find in logs... (Filter)
+
+#>
+function Log-Find-(){ AAA-Functions }
+
+
+
+<#
+.SYNOPSIS
+Find First 1|n events (oldest)
+#>
+function Log-Find-First-(){ AAA-Functions }
+
+<#
+.SYNOPSIS
+Find... -aka- Filterings
+
+#>
+function Log-Find( $xStore, $xFilter )
+	{ 
+	"***2implement..."
+
+	}
+
+
+
+<#
+.SYNOPSIS
+First/Oldest 1|n events (newest)
+from the the Application log
+
+#>
+function Log-Find-First( $xLog, [int]$xCount=1 ) 
+	{ 
+	# return Get-EventLog -LogName $xLog -Newest $xCount 
+	return Get-WinEvent	 -LogName $xLog -MaxEvents $xCount
+	}
+
+
+
+<#
+.SYNOPSIS
+Filtering First 1|n events (oldest) from ??? log
+#>
+function Log-Find-First-Application( [int]$xCount=1 ) { return Log-Find-First -xLog "Application" -xCount $xCount }
+function Log-Find-First-Security( [int]$xCount=1 )    { return Log-Find-First -xLog "Security" -xCount $xCount }
+function Log-Find-First-Setup( [int]$xCount=1 )    { return Log-Find-First -xLog "Setup" -xCount $xCount }
+function Log-Find-First-System( [int]$xCount=1 )    { return Log-Find-First -xLog "System" -xCount $xCount }
+
+
+<#
+.SYNOPSIS
+Find Last 1|n events (oldest)
+#>
+function Log-Find-Last-() { AAA-Functions }
+
+
+<#
+.SYNOPSIS
+Filtering Last 1|n (newest) from ??? log
+#>
+function Log-Find-Last( $xLog, [int]$xCount=1 ) 
+	{ return Get-WinEvent -LogName $xLog -Oldest -MaxEvents $xCount }
+
+
+
+<#
+.SYNOPSIS
+Last 1|n events (oldest) from the the Application log
+#>
+function Log-Find-Last-Application( [int]$xCount=1 ) { return Log-Find-Last -xLog "Application" -xCount $xCount }
+function Log-Find-Last-Security( [int]$xCount=1 )    { return Log-Find-Last -xLog "Security" -xCount $xCount }
+function Log-Find-Last-Setup( [int]$xCount=1 )       { return Log-Find-Last -xLog "Setup" -xCount $xCount }
+function Log-Find-Last-System( [int]$xCount=1 )      { return Log-Find-Last -xLog "System" -xCount $xCount }
+
+
+
+<#
+.SYNOPSIS
+Empty stores
+#>
+function Log-Find-Empty-Stores()
+	{ Get-WinEvent -ListLog * | Where-Object { $_.RecordCount -eq 0 } }
+
+
+
+<#
+.SYNOPSIS
+List non empty stores
+stores that has at leat 1 event recorded...
+#>
+function Log-Find-Populated-Stores()
+	{ Get-WinEvent -ListLog * | Where-Object { $_.RecordCount -gt 0 } }
+
+
+
+<#
+.SYNOPSIS
+Log retrieve
+#>
+function Log-Get-{ AAA-Functions }
+
+
+
+<#
+.SYNOPSIS
+Get all from log *
+
+#>
+function Log-Get-All-( $xLog ) 
+	{ 
+	Get-EventLog -LogName Application 
+	}
+
+
+
+<#
+.SYNOPSIS
+Application events...
+#>
+function Log-Get-All-Application() { Get-EventLog -LogName Application }
+
+
+
+<#
+.SYNOPSIS
+Security events...
+#>
+function Log-Get-All-Security() { Get-EventLog -LogName Security }
+
+
+
+<#
+.SYNOPSIS
+All Setup events...
+#>
+function Log-Get-All-Setup() { Get-EventLog -LogName System      }
+
+
+
+<#
+.SYNOPSIS
+All System events...
+#>
+function Log-Get-All-System() { Get-EventLog -LogName System      }
+
+<#
+.SYNOPSIS
+Providers
+
+#>
+function Log-Get-All-Providers()
+	{
+	return Get-WinEvent -ListProvider * -ErrorAction SilentlyContinue `
+		| Select-Object * 
+	}
+
+
+<#
+.SYNOPSIS
+Events Stores list...
+Application, System, Security, Setup, ...
+Show a the list of all Windows logs
+
+#>
+function Log-Get-All-Stores(){ Get-EventLog -LogName *  }
+
+
+
+
+<#
+.SYNOPSIS
+Events Stores list...
+Application, System, Security, Setup, ...
+Show a the list of all Windows logs
+
+#>
+function Log-Get-All-StoresX(  ){ Get-WinEvent -ListLog *  }
+
+
+
+<#
+.SYNOPSIS
+GUI for Logs
+#>
+function Log-GUI-{ AAA-Functions }
+
+
+
+<#
+.SYNOPSIS
+GUI/Other
+#>
+function Log-GUI-Events-All()
+	{
+	Write-Progress -Activity "Log/All" -Status "Reading..." -PercentComplete 50
+	$x = Get-WinEvent -ListLog * | Select-Object * 
+	Write-Progress -Activity "Log/All" -Status "Reading..." -PercentComplete 100
+	$x | Out-GridView -Title "All events" -PassThru | Format-List
+	}
+
+
+
+<#
+.SYNOPSIS
+GUI/Other
+#>
+function Log-GUI-Events-Application()
+	{ 
+	Log-Get-All-Application  `
+		| Out-GridView -Title "Application events" -PassThru `
+		| Format-List
+	}
+
+
+
+<#
+.SYNOPSIS
+Providers functionality...
+
+ATT***
+Error on passtrough
+only works with small lists
+with large lists passthrough do not pass the object
+
+#>
+function Log-GUI-Providers
+	{ 
+	Write-Progress -Activity "Providers" -Status "Getting registed..." -PercentComplete 50
+
+	$x = Log-Get-Providers
+
+	Write-Progress -Activity "Providers" -Status "Showing..." -PercentComplete 100
+	$x | Out-GridView -Title "Log-Providers" -PassThru
+	}
+
+
+
+
+<#
+.SYNOPSIS
+Events Stores list...
+Application, System, Security, Setup, ...
+#>
+function Log-GUI-Stores ( [switch] $xNoGUI )
+	{ 
+	#TODO
+	#Work in the information to display
+	#get data to show into object[] Log ~> Name, MachineName, ...
+
+	$x = Get-EventLog -LogName * | Select-Object * 
+
+	if ( $xNoGUI ) { return $x }
+
+	$x | Out-GridView -Title "Log-Stores" -PassThru
+
+	}
+
+
+
+
+<#
+.SYNOPSIS
+GUI/Other
+#>
+function Log-GUI-Stores-Sizes
+	{ 
+	Get-WinEvent -ListLog * `
+		| Select-Object -Property `
+			LogName, RecordCount, FileSize, LogFilePath `
+		| Out-GridView -PassThru `
+		| Format-List
+
+	}
+
+
+<#
+.SYNOPSIS
+GUI/Other
+#>
+function Log-GUI-Stores-Times
+	{ 
+	Get-WinEvent -ListLog * `
+		| Select-Object -Property `
+			LogName, LastAccessTime, LastWriteTime, OldestRecordNumber `
+		| Out-GridView -PassThru `
+		| Format-List
+
+		#LogName, LogType, IsEnabled, LogIsolation, IsClassicLog, ProvidersNames
+
+	}
+
+
+
+<#
+.SYNOPSIS
+GUI/Other
+#>
+function Log-GUI-Stores-Others
+	{ 
+	Get-WinEvent -ListLog * `
+		| Select-Object -Property `
+		 	LogName, LogType, IsEnabled, LogIsolation, IsClassicLog, ProvidersNames `
+		| Out-GridView -PassThru `
+		| Format-List
+
+	}
+
+
+
+
+<#
+.SYNOPSIS
+Events Windows Console (.msc)
+#>
+function Log-GUI-OS{ eventvwr.msc }
+
+
+
+
+<#
+.SYNOPSIS
+	Hidden-Programs		?event id 7045
+	Logins				?InstanceId 1073748869
+
+#>
+function Log-Inspect-(){ AAA-Functions }
+
+
+<#
+.SYNOPSIS
+?InstanceId 1073748869
+?event id 7045
+#>
+function Log-Inspect-HiddenPrograms
+	{
+	# Get-EventLog -LogName System -InstanceId 1073748869
+	Get-EventLog -LogName System | Where-Object { $_.EventID -eq 7045 } 
+	}
+
+
+
+<#
+.SYNOPSIS
+Logins
+#>
+function Log-Inspect-Logins
+	{
+	# Get-EventLog -LogName System -InstanceId 1073748869
+	Get-EventLog -LogName System | Where-Object { $_.EventID -eq 7045 } | format-table -Wrap
+	}
+
+
+<#
+.SYNOPSIS
+Logon
+#>
+function Log-Inspect-Logon
+	{
+	# Get-EventLog -LogName System -InstanceId 1073748869
+	# Get-EventLog -LogName System -Source "Microsoft-Windows-WinLogon" | Where-Object { $_.EventID -eq 7001 } 
+	Get-WinEvent -FilterHashtable @{ ProviderName="microsoft-windows-winlogon"; id=7001; }
+	}
+
+
+<#
+.SYNOPSIS
+Logoff
+#>
+function Log-Inspect-Logoff
+	{
+	Get-WinEvent -FilterHashtable @{ ProviderName="microsoft-windows-winlogon"; id=7001; }	
+	}
+
+
+
+
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
 #  |M|O|D|U|L|E|S
@@ -1114,143 +744,90 @@ function Module-List
 
 
 
+
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
-#  |NE|T|W|O|R|K|
+#  |NE|T|
 #
 
 
 function Net- { AAA-Functions }
 
+function Net-DNS { AAA-Warn "Use DNS-"  }
 
-function Net-Scan { IP-Scan }
+function Net-Http { AAA-Warn "Use HTTP-"  }
 
-function Network- { AAA-Warn( "Use net-*" ) }
+function Net-iSCSI { AAA-Warn( "Use iSCSI-" ) }
 
+function Net-IP { AAA-Warn( "Use IP-" ) }
 
-function HTTP- { AAA-Functions }
+function Net-Proxy { AAA-Warn( "Use Proxy-" ) }
 
-function Net-iSCSI { AAA-Warn( "Use iSCSI-*" ) }
+function Net-TCP { AAA-Warn( "Use TCP-" ) }
 
+function Net-UDP { AAA-Warn( "Use UDP-" ) }
 
-function Net-IP { AAA-Warn( "Use IP-*" ) }
+function Net-URI { AAA-Warn( "Use URI-" ) }
 
-function Net-Proxy { AAA-Warn( "Use Proxy-*" ) }
-
-
-
-
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#
-#  |O|S|
-#
-#
-<#
-.SYNOPSIS
-OS Related Functionality
-
-
-#>
-function OS-(){ AAA-Functions }
-
-
+function Network- { AAA-Warn( "Use net-" ) }
 
 
 <#
 .SYNOPSIS
-OS Information (see alse System-info)
-
-Microsoft Windows 10 Pro 10.0.18363, 18363/Multiprocessor Free 64-bit SP=0.0
-33397252/28038924 (Memory/Free) 
-2019-12-20 20:57:59, 2020-01-23 18:42:03 (Install/Last-Boot)
-\Device\HarddiskVolume5 <> \Device\HarddiskVolume4 (Device System <> Boot)
-C:Windows, Debug is Off
-OS-SKU=48, 00331-10000-00001-AA303
-MUILanguages={en-GB, pt-PT}/0809/1252/44/2057
-OEM (2/0)
-
-...
-Name                                      :Microsoft Windows 10 Pro|C:\Windows|\Device\Harddisk4\Partition1
-SystemDirectory                           : C:\Windows\system32
-SystemDrive                               : C:
-Status                                    : OK
-Description                               : 
-CreationClassName                         : Win32_OperatingSystem
-CSCreationClassName                       : Win32_ComputerSystem
-LocalDateTime                             : 2020-01-23 20:32:16
-MaxNumberOfProcesses                      : 4294967295
-MaxProcessMemorySize                      : 137438953344
-SizeStoredInPagingFiles                   : 4980736
-TotalSwapSpaceSize                        : 
-TotalVirtualMemorySize                    : 38377988
-FreeSpaceInPagingFiles                    : 4980736
-FreeVirtualMemory                         : 33093656
-CSName                                    : ZEE-PC
-CurrentTimeZone                           : 0
-Distributed                               : False
-NumberOfProcesses                         : 167
-OSType                                    : 18
-OtherTypeDescription                      : 
-CSDVersion                                : 
-DataExecutionPrevention_32BitApplications : True
-DataExecutionPrevention_Available         : True
-DataExecutionPrevention_Drivers           : True
-DataExecutionPrevention_SupportPolicy     : 2
-EncryptionLevel                           : 256
-ForegroundApplicationBoost                : 2
-LargeSystemCache                          : 
-Manufacturer                              : Microsoft Corporation
-Organization                              : 
-PAEEnabled                                : 
-PlusProductID                             : 
-PlusVersionNumber                         : 
-PortableOperatingSystem                   : False
-Primary                                   : True
-ProductType                               : 1
-OSProductSuite                            : 256
-SuiteMask                                 : 272
-PSComputerName                            : 
-CimClass                                  : root/cimv2:Win32_OperatingSystem
-CimInstanceProperties                     : {Caption, Description, InstallDate, Name...}
-CimSystemProperties                       : Microsoft.Management.Infrastructure.CimSystemProperties
+Network adapters information
+(NIC)
 
 #>
-function OS-Info()
-	{
-	$xData = Get-CimInstance Win32_OperatingSystem
+function Net-NIC- { AAA-Functions }
 
-	"{0} {1} {2}, build {3}, {4}, SP={5}.{6} " -f `
-		$xData.Caption, $xData.Version, $xData.BuildNumber, $xData.BuildType, $xData.OSArchitecture, $xData.ServicePackMajorVersion, $xData.ServicePackMinorVersion;
-	
-	"Memory {0}/{1} (Total/Free)" -f $xData.TotalVisibleMemorySize, $xData.FreePhysicalMemory;
 
-	"Moments {0} / {1} (Installed/Last-Boot)" -f $xData.InstallDate, $xData.LastBootUpTime;
+<#
+.SYNOPSIS
+View network adapters suported features
+Optional Select
 
-	"Devices {0} <> {1} (System<>Boot)" -f $xData.SystemDevice, $xData.BootDevice;
-
-	"Installed in {0} ~> Debug={1}" -f $xData.WindowsDirectory, ( "Off", "On" )[$xData.Debug];
-
-	"SKU={0}; Serial={1}" -f $xData.OperatingSystemSKU, $xData.SerialNumber; 
-
-	"Language {0}, Locale {1}, Codeset {2}, Country {3}, MUI {4}" -f `
-		$xData.OSLanguage, $xData.Locale, $xData.CodeSet, $xData.CountryCode, ($xData.MUILanguages -join "+");
-
-	"Current user is {0}; users {1}; Licensed {2}" -f $xData.RegisteredUser, $xData.NumberOfUsers, $xData.NumberOfLicensedUsers;
-	""
-	""
-	
+#>
+function Net-NIC-Features
+	{ 
+	Get-NetAdapterAdvancedProperty | Out-GridView -Title "Network adapters features" -PassThru
 	}
 
 
+<#
+.SYNOPSIS
+View network adapters
+Optional Select
+
+#>
+function Net-NIC-List 
+	{ 
+	Get-NetAdapter | Out-GridView -Title "Network adapters" -PassThru
+	}
+
 
 <#
 .SYNOPSIS
-Is a OS restart pending?
-get info from registry
+View network adapters statistics
+Optional Select
+
 #>
-function OS-PendingRestart()
-	{ Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending" }
+function Net-NIC-Statistics 
+	{ 
+	Get-NetAdapterStatistics | Out-GridView -Title "Network statistics" -PassThru
+	}
+
+
+<#
+.SYNOPSIS
+SingleRoot I/O Virtualization information
+
+#>
+function Net-NIC-Statistics 
+	{ 
+	Get-NetAdapterSRIOV | Out-GridView -Title "Network adapters SRIOV" -PassThru
+	}
+
 
 
 
@@ -1605,27 +1182,6 @@ function Proxy-Off
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
-#  |P|S|
-#
-
-
-function PS- { AAA-Functions }
-
-
-function PS-Commands( $x="*" )   { Get-Command -Type Cmdlet -Name $x }
-
-function PS-Functions( $x="*" )  { Get-Command -Type Function -Name $x }
-
-function PS-Scripts( $x="*" )	  { Get-Command -Type ExternalScript -Name $x }
-
-function PS-Parameters( $x="*" ) { Get-Command -ParameterName $x }
-
-function PS-Modules( $x="*" )	  { Get-Module -Name $x }
-
-
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#
 #  |R|E|G|I|S|T|R|Y|
 #
 
@@ -1744,6 +1300,7 @@ function Security-Credential-Set( $xName, $xPassword )
 #  |S|E|R|V|I|C|E|S
 #
 #
+
 <#
 .SYNOPSIS
 Services-
@@ -1754,21 +1311,82 @@ Services-
 function Service-  { AAA-Functions }
 
 
+
 <#
 .SYNOPSIS
-List services name/DisplayName
+Start/Stop/Restart a service...
+#>
+
+function Service-Action-  { AAA-Functions }
+
+
+<#
+.SYNOPSIS
+Start a service...
+#>
+function Service-Action-Start ( $xService ){ $xService | Start-Service }
+
+
+<#
+.SYNOPSIS
+Stop a service...
+#>
+function Service-Action-Stop ( $xService ){ $xService | Stop-Service }
+
+
+
+<#
+.SYNOPSIS
+Restart a service...
+#>
+function Service-Action-Restart ( $xService ){ $xService | Restart-Service }
+
+
+
+<#
+.SYNOPSIS
+List services/enums ?startup-type ?actual-state ?types ?...
 
 #>
-function Service-Name ( $xGrep )
-	{ 
-	# search for filter in NAME & DISPLAYNAME
-	$x = `
-		Get-Service `
-			| Where-Object { $_.name -match $xGrep -OR $_.DisplayName -match $xGrep } `
-			| Sort-Object -Property status
+function Service-Enum- { AAA-Functions }
+function Service-Enum-Start()  { [System.Enum]::GetValues( [System.ServiceProcess.ServiceStartMode] ) }
+function Service-Enum-Status() { [System.Enum]::GetValues( [System.ServiceProcess.ServiceControllerStatus] )	}
+function Service-Enum-Types()  { [System.Enum]::GetValues( [System.ServiceProcess.ServiceType] ) }
 
-	$x | ForEach-Object { String-Edge $_.displayname $_.name }
- 	}
+
+function Service-GUI  { Start-Process -FilePath Services.msc }
+
+function Service-GUIX  { Get-Service | Out-GridView -Title "Services..." -PassThru }
+
+
+
+
+
+
+<#
+.SYNOPSIS
+Equalize all lines
+
+!implement xFill
+!implement xAlignment
+
+?do String-Pad ?string ?fill ?aligment
+#>
+function String-Columnize( [string[]]$xArray, $xSize, $xFill = " " )
+	{
+
+	$x = @();
+
+	# ?xSize was argumented?? or realize it!!!
+	if ( $null -eq $xSize )
+		{ $xSize = $xArray[ (String-Longest $xArray) ].length }
+
+	foreach( $e in $xArray )
+		{ $x += String-Pad-Left -xString $e -xFill $xFill -xSize $xSize;  }
+
+	return $x
+	}
+
 
 
 <#
@@ -1789,6 +1407,69 @@ function Service-Command ( $xGrep )
 	}
 
 
+<#
+.SYNOPSIS
+List services name/DisplayName
+
+#>
+function Service-List ( $xGrep = "*" )
+	{ 
+
+	Get-WmiObject win32_service `
+		| Where-Object { $_.name -like $xGrep -OR $_.DisplayName -like $xGrep } `
+		| Sort-Object -Property startmode `
+		| Group-Object -Property state `
+		| ForEach-Object {
+			"`n"; `
+			$x = $_.group.pathname[ (String-Longest $_.group.pathname) ].length; `
+			String-Pad-Center $_.group[0].state "."; `
+			"`n";
+			$_.group `
+				| ForEach-Object `
+					{ `
+					"{0} {1} {2} " -f `
+						( String-Pad-Left -xString $_.pathname -xSize $x ), `
+						( String-Pad-Center -xString $_.startmode -xSize 10 ), `
+						$_.name `
+					} 
+			}
+ 	}
+
+
+
+<#
+.SYNOPSIS
+Actions Start/Stop/Restart
+
+#>
+function Service-Name ( $xGrep )
+	{ 
+	# search for filter in NAME & DISPLAYNAME
+	$x = `
+		Get-Service `
+			| Where-Object { $_.name -match $xGrep -OR $_.DisplayName -match $xGrep } `
+			| Sort-Object -Property status
+
+	$x | ForEach-Object { String-Edge $_.displayname $_.name }
+ 	}
+
+
+<#
+.SYNOPSIS
+List services CLI /Name/Status
+by Grouped enum.Status
+
+#>
+function Service-Status ( $xGrep )
+	{ 
+	# search for filter in NAME & DISPLAYNAME
+	$x = `
+		Get-Service `
+			| Where-Object { $_.name -match $xGrep -OR $_.DisplayName -match $xGrep } `
+			| Sort-Object -Property status
+
+	$x | ForEach-Object { String-Edge $_.name  ( "{0} {1}" -f $_.starttype, $_.status ) }
+ 	}
 
 
 <#
@@ -1807,7 +1488,9 @@ function Service-Status ( $xGrep )
 	$x | ForEach-Object { String-Edge $_.name  ( "{0} {1}" -f $_.starttype, $_.status ) }
  	}
 
-	
+
+
+
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -1837,7 +1520,9 @@ function Sound-Plum
 	}
 
 function Sound-Speak( [string] $x )
-	{ 	}
+	{ 	
+	TTS-Speak( $x )
+	}
 
 
 
@@ -1858,6 +1543,17 @@ System releated functionality ( devices, ... )
 function System-(){ AAA-Functions }
 
 
+
+
+<#
+.SYNOPSIS
+System counters
+
+#>
+function Counters-Table
+	{
+	Get-Counter -ListSet * | Out-GridView -PassThru
+	}
 
 
 
@@ -1907,19 +1603,104 @@ function System-Info()
 
 
 
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
 #  |T|A|S|K|
 #
 
+<#
+.SYNOPSIS
+System counters
+
+#>
 function Task-  { AAA-Functions }
 
 
+<#
+.SYNOPSIS
+System counters
+
+#>
 function Task-Create { "***2implement"  }
+
+
+
+<#
+.SYNOPSIS
+System counters
+
+#>
 function Task-Destroy { "***2implement"  }
+
+
+<#
+.SYNOPSIS
+System counters
+
+#>
 function Task-Get { "***2implement"  }
+
+
+<#
+.SYNOPSIS
+System counters
+
+#>
 function Task-List( [switch]$nogui ) { "***2implement"  }
 
+
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#
+#  |T|R|U|S|T|
+#
+
+<#
+.SYNOPSIS
+Trust system
+Creadentials, Certificates, Tokens, ...
+Kerberos, LANManager, ...
+
+#>
+function Trust-  { AAA-Functions }
+
+
+
+<#
+.SYNOPSIS
+Get a credential
+defaults to current user
+
+#>
+function Trust-Credential( $xUser = $env:username ) 
+	{ 
+	$x = Get-Credential -UserName $xUser;
+	return $x
+	}
+
+
+
+<#
+.SYNOPSIS
+Get a credential
+defaults to current user
+
+#>
+function Trust-WinRM( ) 
+	{ 
+	try 
+		{ Get-Item WSMan:\localhost } 
+	catch 
+		{ "WinRM/WSMan is apparently is disabled..." }
+	}
+
+
+
+	
 
 
 

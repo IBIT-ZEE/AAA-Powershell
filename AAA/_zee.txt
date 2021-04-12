@@ -1,0 +1,29 @@
+
+
+
+
+
+// SIMBOLIC-LINK so won't inadvertidment loose the file 
+mklink	C:\APL\Microsoft\Powershell64\profile.ps1				C:\DAT\Powershell\AAA\profile.ps1
+mklink	C:\Windows\System32\WindowsPowerShell\v1.0\profile.ps1	C:\DAT\Powershell\AAA\profile.ps1  
+
+
+// REGISTRY
+* .ps1 execute on command-line invocation or doubleclick on shell
+* do not use "-args" here
+C:\APL\Microsoft\Powershell64\Powershell.exe -command "%1" %*
+
+
+// WINDOWS SHELL FIX COMMAND-LINE/SHELL-EXTENSIONS
+pathext += ";.ps1"
+C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -Command "%1" "%*"
+
+
+// QUIRKS
+
+
+c:\Windows\System32\WindowsPowerShell\v1.0 ~> profile.ps1 
+* sometimes link goes wheird if altering folder
+
+
+

@@ -5,66 +5,174 @@
 
 Set-StrictMode -Version 5;
 
-
-
-
+# Add-Type -AssemblyName System.Data
 
 
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 #
-#  |D|A|T|A|B|A|S|E|
+#  |D|A|T|A|*|
+#  |D|A|T|A|S|E|T|
+#  |D|A|T|A|T|A|B|L|E|
+#  |D|A|T|A|C|O|L|U|M|N|
 #
 <#
-Generic interface (façade) for MSSQL, MySQL, PostGRES, MongoDB, ...
-
-Database-
-	@( -host xHost )
-	+
-	-List ....... ask DB engine for databases
-	-Open ....... -name ~> create object and store propertties
-	-Insert ..... -name -> create a new Database
-	-Remove ..... -name -> delete a database 
-	-TransOn .... Transaction open
-	-TransOff ... Transactioon close
-
-Database-Table- | xDB.Table( <name> )
-	@( -host xHost, -table xTable )
-	+
-	-FieldId ... field used for Id/unique (none means not unique)
-	-Get ....... get one object
-	-Find ...... -name/regex
-	-List ...... get collection of objects
-	-Insert .... -name
-	-Remove .... -name
-
-Database-Table-Record- | Database-Record | xDB.Table( <name> ).Record
-	@( -host xHost, -table xTable)
-	+
-	-Active ... ?last
-	-Get ...... by ID, use Table.FieldId
-	-Find ..... { Q.e.D }
-
-Database-Table-Record-Field- | Database-Field | xDB.Field( <name> )
-	@( -host xHost, -table xTable, -record id )
-	* atomic value
-	+
-	-List
-	-Find
-	-Value ... 
 
 #>
 
 
-function Database- { AAA-Functions }
+<#
+.SYNOPSiS
+
+#>
+function Dataset- { AAA-Functions }
 
 
 
-function Database-Object 
-	{  
+
+<#
+.SYNOPSiS
+
+
+#>
+function Datatable- { AAA-Functions }
+
+
+<#
+.SYNOPSiS
+
+
+#>
+function Datatable-Load( $xName ) 
+	{  }
+
+
+
+function Datatable-Test- { AAA-Functions }
+
+
+function Datatable-Test-T1Ent()
+	{ 
+	$xTable = [System.Data.DataTable]::new( "t1ent" );
+
+	$xID = [System.Data.DataColumn]::new( "id", [Int32] );
+	$xID.AutoIncrement = true;		# *seed=0 *step=1
+	$xID.ReadOnly = $true;
+	$xName  = [System.Data.DataColumn]::new( "name" , [string]   );
+	$xValue = [System.Data.DataColumn]::new( "value", [int32]    );
+	$xDate  = [System.Data.DataColumn]::new( "date" , [datetime] );
+	$xObs   = [System.Data.DataColumn]::new( "Obs"  , [string]   );
+	$xFlag  = [System.Data.DataColumn]::new( "flag" , [boolean]  );
+	
+	$xTable.Columns.Add( $xId    );
+	$xTable.Columns.Add( $xName  );
+	$xTable.Columns.Add( $xDate  );
+	$xTable.Columns.Add( $xValue );
+	$xTable.Columns.Add( $xObs   );
+	$xTable.Columns.Add( $xFlag  );
+		
+	return ,$xTable;
+	}
+
+
+function Datatable-Test-T2Obj()
+	{
+	$xTable = [System.Data.DataTable]::new( "t2obj" );
+
+	$xID = [System.Data.DataColumn]::new( "id", [Int32] );
+	$xID.AutoIncrement = true;		# *seed=0 *step=1
+	$xID.ReadOnly = $true;
+	$xName  = [System.Data.DataColumn]::new( "name" , [string]   );
+	$xValue = [System.Data.DataColumn]::new( "value", [int32]    );
+	$xDate  = [System.Data.DataColumn]::new( "date" , [datetime] );
+	$xObs   = [System.Data.DataColumn]::new( "Obs"  , [string]   );
+	$xFlag  = [System.Data.DataColumn]::new( "flag" , [boolean]  );
+	
+	$xTable.Columns.Add( $xId    );
+	$xTable.Columns.Add( $xName  );
+	$xTable.Columns.Add( $xDate  );
+	$xTable.Columns.Add( $xValue );
+	$xTable.Columns.Add( $xObs   );
+	$xTable.Columns.Add( $xFlag  );
+		
+	return ,$xTable;
+	}
+
+function Datatable-Test-T3Doc()
+	{
 
 	}
+
+
+function Datatable-Test-T4DocX()
+	{
+	
+	}
+
+function Datatable-Test-T5Tabs()
+	{
+	
+	}
+
+
+<#
+.SYNOPSiS
+
+
+#>
+function Datatable-Column( $xName, $xType = [string] ) 
+	{  
+	
+	}
+
+
+<#
+.SYNOPSiS
+
+#>
+function Datatable-Columns( $xName ) 
+	{  
+	
+	}
+
+
+
+<#
+.SYNOPSiS
+
+
+#>
+function Datagrid- { AAA-Functions }
+
+
+
+<#
+.SYNOPSiS
+
+
+#>
+function Datagrid-New( $xTable )
+	{ 
+
+	# Formm
+	$xForm = [System.Windows.Forms.Form]::new();
+
+	# Datagrid
+	$xGrid = [System.Windows.Forms.DataGridView]::new()
+	$xGrid.Dock = [System.Windows.Forms.DockStyle]::Fill
+	$xGrid.DataSource = $xTable
+
+	# PopUp
+	$xPopup = [System.Windows.Forms.ContextMenuStrip]::new()
+	$xGrid.ContextMenuStrip = $xPopup
+
+	$xForm.Controls.Add( $xGrid );
+	$xForm.ShowDialog();
+
+	}
+
+
 
 
 
@@ -165,13 +273,33 @@ function MySQL-Open { "xxx" }
 
 
 
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#
+#  |S|T|R|I|N|G|
+#
+#
+<#
+.SYNOPSIS.
+? Grow 
+? Invert sinle/multiple
+? Inflate/Deflate
+? Clone/Cloner -vs- Replicate ?! single/multiple
+? Add/Subtract -vs- Append/Remove
+
+? Strings-* or String overload ??
+
+#>
+function Pattern-  { AAA-Functions }
+
+
 <#
 -xString/auto="_" as the pattern to replicate
 -xSize/auto=<console-width> ???implement
 String-Replicate is invoked...
 [string][char]196 ?ASCII ?UNICODE
 #>
-function String-Line( $xString = "_" ) 
+function Pattern-Line( $xString = "_" ) 
 	{ 
 	[int]$xTimes = $Host.UI.RawUI.WindowSize.Width / $xString.Length
 	return String-Replicate $xString $xTimes;
@@ -179,24 +307,26 @@ function String-Line( $xString = "_" )
 
 
 
-function String-Pattern-Artifact( [int] $xSize ) 
+<#
+
+#>
+function Pattern-Artifact( [int]$xSize ) 
 	{
-
-	$xData = "";
-	for( $x = 0; $x -lt $xSize; $x++ )
-		{  
-		$a = Get-Random -Minimum 32 -Maximum 254;
-		$xFinal += [char] $a;
-		} 
-
-	return $xFinal;
+	return "2DO***";
 	}
 
 
-function String-Pattern- { AAA-List }
 
 
-function String-Pattern-Floor( [int] $xLines = 1 ) 
+<#
+.SYNOPSIS
+Text/ASCII pattern
+Simulating isometric perspective floor
+
+* argument how many screen (actual console width) lines you want
+
+#>
+function Pattern-Floor( [int] $xLines = 1 ) 
 	{ return "__/" * ( $Host.UI.RawUI.WindowSize.Width / 3 * $xLines ) }
 
 
@@ -204,7 +334,7 @@ function String-Pattern-Floor( [int] $xLines = 1 )
 <#
 
 #>
-function String-Pattern-Hexer( $xLines = 1 )
+function Pattern-Hexer( $xLines = 1 )
 	{ 
 	[int]$x = $Host.UI.RawUI.WindowSize.Width / 4;
 	$xLine = "";
@@ -220,11 +350,28 @@ function String-Pattern-Hexer( $xLines = 1 )
 <#
 String-Pattern-Stair + String-Center
 #>
-function String-Pattern-Piramid( $xString = "*", $xLines = 3, $xWidth )
+function Pattern-Piramid( $xString = "*", $xLines = 3, $xWidth )
 	{
 	$xData = 0
 
 
+	}
+
+
+<#
+
+#>
+function Pattern-Random( [int]$xSize ) 
+	{
+
+	$xData = "";
+	for( $x = 0; $x -lt $xSize; $x++ )
+		{  
+		$a = Get-Random -Minimum 32 -Maximum 254;
+		$xData += [char] $a;
+		} 
+
+	return $xData;
 	}
 
 
@@ -234,7 +381,7 @@ String[] stair of pattern
 -xLines
 -xwidth
 #>
-function String-Pattern-Stair( $xString = "*", $xLines = 3, $xWidth )
+function Pattern-Stair( $xString = "*", $xLines = 3, $xWidth )
 	{
 	
 	# AUTO-WIDTH
@@ -256,6 +403,7 @@ function String-Pattern-Stair( $xString = "*", $xLines = 3, $xWidth )
 	$xData += ( $xString * $xGrowing * ++$xLines ).Substring( 0, $xWidth );
 	return $xData;
 	}
+
 
 
 

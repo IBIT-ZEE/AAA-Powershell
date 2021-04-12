@@ -1,0 +1,620 @@
+
+<#
+.SYNOPSIS
+test help
+test AAA-Scripts-Help
+
+.NOTES
+# Add-Type -AssemblyName "System.Web";
+# Param( $p1 = "parm1" )
+
+# configure same environment as in console
+# .\profile.ps1
+
+AAA-Script-Help;
+#>
+
+
+
+function main()
+	{
+'
+*******************************
+WINFORMS/GDI+ GRAPHICS SHOWCASE
+*******************************
+
+'
+	$args
+	# $x = Read-Host -prompt "Enter key..."
+
+	$xForm = GUI-Container-Form "theForm";
+	$xForm.ClientSize = [System.Drawing.Size]::new(555, 444);
+
+	$xFl1 = GUI-Container-Flow $xForm;
+	$xFl1.BackColor = [System.Drawing.Color]::Salmon;
+	$xFl1.AutoSize = $true;
+
+	$xMT1 = GUI-Control-MaskedTextbox $xFl1 "123456"
+	$xMT1.BackColor = [System.Drawing.Color]::Cornsilk;
+	$xMT1.add_Click( { $xTB1.Text = $this.Text } )
+
+	$xGB1 = GUI-Container-Groupbox $xFl1 "XYZ/01";
+	$xGB1.BackColor = [System.Drawing.Color]::Pink;
+	$xGB1.AutoSize = $true;
+	# $xGB1.Dock = [System.Windows.Forms.DockStyle]::Right
+
+	# CONTROLS
+	$xMS1 = GUI-Container-Menu $xForm;
+
+	$xMI1 = $xMS1.Items.Add( "File" );
+	#$xMI1 = GUI-Control-Menuitem $xMS1 "File";
+	$xMI2 = GUI-Control-Menuitem $xMS1 "Edit";	
+	$xMI3 = GUI-Control-Menuitem $xMS1 "Actions";
+	$xMI4 = GUI-Control-Menuitem $xMS1 "Help";
+
+	$xMI1.DropDownItems.Add( "Open" );
+	$xMI1.DropDownItems.Add( "Close" );
+	
+
+	$xPB1 = GUI-Control-Picturebox $xFl1
+	$xPB1.ImageLocation = "x.png"
+
+	$xCB1 = GUI-Control-Combobox $xFl1 (1, 22, 333, 4444)
+	$xLB1 = GUI-Control-Listbox  $xFl1 (1, 22, 333, 4444)
+
+	$xPB = GUI-Control-ProgressBar $xFl1 "0..100%"
+	$xPB.Value = 50;
+
+	$xBt1 = GUI-Control-Button  $xFl1 "OK";
+	$xFl1 = GUI-Control-Label   $xFl1 -xText "123ABC"
+	$xTb1 = GUI-Control-Textbox $xFl1 -xText "ABC123"
+
+	$xCk1 = GUI-Control-Checkbox $xFl1 "CheckB1"
+	$xCk2 = GUI-Control-Checkbox $xFl1 "CheckB2"
+
+	$xRB1 = GUI-Control-Radiobutton $xGB1 "RadioB1"
+	$xRB2 = GUI-Control-Radiobutton $xGB1 "RadioB2"
+	#$xRB1.Location = [System.Drawing.Point]::new( 0, 0 )
+	#$xRB2.Location = [System.Drawing.Point]::new( 0, 20 )
+
+
+
+	# ACTIONS/EVENTS
+	$xForm.Add_Click( { $xFl1.Visible = -not $xFl1.Visible } );
+	$xBt1.Add_Click( { $xForm.Close() } );
+	$xLB1.Add_Click( { $xCB1.Text = $xLB1.Text } );
+
+
+	# CANVAS
+	$xCanvas = GUI-Graphics-Canvas $xForm;
+	$xBrush  = GUI-Graphics-Brush ([System.Drawing.Color]::Green);
+	$xPen    = GUI-Graphics-Pen ([System.Drawing.Color]::Red) 10;
+
+	$xForm.add_Paint( 
+		{ 
+		GUI-Graphics-Line $xCanvas (0, 0, 1024, 256)
+		GUI-Graphics-Line $xCanvas (0, 0, 1024, 512)
+		GUI-Graphics-Line $xCanvas (0, 0, 1024, 1024) $xPen
+
+		GUI-Graphics-Box $xCanvas ( 1, 22, 333, 4444 )
+		GUI-Graphics-BoxX $xCanvas ( 4, 33, 222, 1111 )
+
+		GUI-Graphics-Ellipse $xCanvas (11, 22, 33, 44)
+		GUI-Graphics-EllipseX $xCanvas (55, 66, 77, 88) $xBrush
+	
+		# BEZIER-CURVE
+		GUI-Graphics-Bezier $xCanvas ( 1, 22, 333, 4, 55, 666, 7, 88 ) $xPen
+
+		#TEXT
+		GUI-Graphics-Text $xCanvas "abcde ABCDE 12345"
+
+ 
+		} 
+		);
+
+	$xForm.ShowDialog();
+
+	# $xForm.AcceptButton = $xbtOk;
+	# $xSize = [System.Drawing.Size]::new(400,300);
+	$xPoint = [System.Drawing.Point]::new(256,256);
+
+	}
+
+
+
+
+<# ########################################################################## #>
+
+
+
+
+
+
+
+
+<#
+.SYNOPSIS
+Form
+	.TopMost = $false;
+	.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterParent;
+	.Location = $xPoint
+	.BackColor = [System.Drawing.ColorTranslator]::FromHtml( "#FAFFAF" );
+
+?if $xText is null !hide the title bar
+
+AAA/*
+	.Fonts
+	.Colors
+	.Dock
+
+#>
+function GUI-Container-Form( $xText )
+	{
+	$x = [System.Windows.Forms.form]::new();
+	$x.Text = $xText;
+
+	return $x;
+	}
+
+
+
+<#
+.SYNOPSIS
+FlowLayoutPanel
+
+#>
+function GUI-Container-Flow( $xContainer )
+	{
+	$x = [System.Windows.Forms.FlowLayoutPanel]::new();
+	# ??? $x.Anchor = [System.Windows.Forms.AnchorStyles]::Bottom;
+	$x.Dock = [System.Windows.Forms.DockStyle]::Top;
+	$xContainer.Controls.Add( $x );
+	return $x;
+	}
+
+
+
+<#
+.SYNOPSIS
+Groupbox
+	?Autosize
+	?Text
+
+#>
+function GUI-Container-Groupbox( $xContainer, $xText )
+	{
+	$x = [System.Windows.Forms.GroupBox]::new();
+	$x.Text = $xText;
+
+	# ??? $x.Anchor = [System.Windows.Forms.AnchorStyles]::Bottom;
+	# $x.Dock = [System.Windows.Forms.DockStyle]::Top;
+	$xContainer.Controls.Add( $x );
+	return $x;
+	}
+
+
+
+	
+
+<#
+.SYNOPSIS
+MainMenu
+
+#>
+function GUI-Container-Menu( $xContainer )
+{
+$x = [System.Windows.Forms.MenuStrip]::new();
+# ??? $x.Anchor = [System.Windows.Forms.AnchorStyles]::Bottom;
+$x.Dock = [System.Windows.Forms.DockStyle]::Top;
+$xContainer.Controls.Add( $x );
+return $x;
+}
+
+
+
+
+<#
+.SYNOPSIS
+ContextMenu
+
+#>
+function GUI-Container-ContextMenu( $xContainer )
+{
+
+$x = $xContext = [System.Windows.Forms.ContextMenu]::new()
+# ??? $x.Anchor = [System.Windows.Forms.AnchorStyles]::Bottom;
+# $xContext = [System.Windows.Forms.ContextMenu]::new()
+$xContainer.Controls.Add( $x );
+return $x;
+}
+
+
+
+
+<#
+.SYNOPSIS
+Button/Control
+
+
+#>
+function GUI-Control-Button( $xPlace, $xText )
+	{
+	$x = [System.Windows.Forms.Button]::new();
+	$x.Text = $xText;
+	$xPlace.Controls.Add( $x );
+	return $x;
+	}
+
+
+
+<#
+.SYNOPSIS
+Checkbox/Control
+	.Checked
+
+
+#>
+function GUI-Control-Checkbox( $xPlace, $xText )
+	{
+	$x = [System.Windows.Forms.CheckBox]::new();
+	$x.Text = $xText;
+	$xPlace.Controls.Add( $x );
+	return $x;
+	}
+
+
+
+<#
+.SYNOPSIS
+Label/Control
+	.Autosize
+	.Location<-Point
+	.Width/Height
+	.BackgroundColor/ForegroundColor
+	.Font
+
+#>
+function GUI-Control-Label( $xPlace, $xText )
+	{
+	$x = [System.Windows.Forms.Label]::new();
+	$x.Text = $xText;
+	$xPlace.Controls.Add( $x );
+	return $x;
+	}
+
+
+
+<#
+.SYNOPSIS
+Combobox/Control
+	.Autosize
+	.Location<-Point
+	.Width/Height
+	.BackgroundColor/ForegroundColor
+	.Font
+	+
+	+
+	.AddSelectedIndexChange/ed {}
+
+#>
+function GUI-Control-Combobox( $xPlace, $xItems )
+	{
+	$x = [System.Windows.Forms.ComboBox]::new();
+	$x.Text = "xText";
+	$x.Items.AddRange( $xItems );
+	$xPlace.Controls.Add( $x );
+	return $x;
+	}
+
+
+
+<#
+.SYNOPSIS
+Listbox/Control
+	.Autosize
+	.Location<-Point
+	.Width/Height
+	.BackgroundColor/ForegroundColor
+	.Font
+	+
+	.SelectedItem
+	+
+	GetItemText( n )
+
+#>
+function GUI-Control-Listbox( $xPlace, $xItems )
+	{
+	$x = [System.Windows.Forms.Listbox]::new();
+	$x.Text = "xText";
+	$x.Items.AddRange( $xItems );
+	$xPlace.Controls.Add( $x );
+	return $x;
+	}
+
+
+
+
+
+<#
+.SYNOPSIS
+MaskedTextbox/Control
+	.Autosize
+	.Location<-Point
+	.Width/Height
+	.BackgroundColor/ForegroundColor
+	.Font
+	+
+	.Multiline < T/F
+	.TextAlign
+
+#>
+function GUI-Control-MaskedTextbox( $xPlace, [string]$xText )
+	{
+	$x = [System.Windows.Forms.MaskedTextbox]::new();
+	$x.Text = $xText;
+	$x.Mask = "000 000";
+	$x.PasswordChar = "#";
+	$x.SelectionStart = 0;
+	#$x.SelectionLenght = $x.Text.Lenght;
+
+	$xPlace.Controls.Add( $x );
+	return $x;
+	}
+
+
+
+
+<#
+.SYNOPSIS
+*****Menuitem/Control
+	.Autosize
+
+#>
+function GUI-Control-Menuitem( $xPlace, [string]$xText )
+	{
+	$x = [System.Windows.Forms.ToolStripMenuItem]::new( $xText );
+	# if ( $xPlace.GetType().basetype -eq [System.Windows.Forms.ToolStrip] ){ $xPlace.Items.Add( $x ) }
+	$xPlace.Items.Add( $x );
+	return $x;
+	}
+
+
+
+<#
+.SYNOPSIS
+Picturebox
+	.Autosize
+	.ImageLocation = ?png/jpg/gif/bmp/wmf/...
+	.SizeMode = [PictureBoxSizeMode]::zoom/...
+	.BorderStyle
+
+#>
+function GUI-Control-Picturebox( $xPlace)
+	{
+	$x = [System.Windows.Forms.Picturebox]::new();
+	# $x.Text = $xText;
+	$x.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::AutoSize
+	$xPlace.Controls.Add( $x );
+	return $x;
+	}
+
+
+
+
+<#
+.SYNOPSIS
+ProgressBar
+	.Autosize
+#>
+function GUI-Control-ProgressBar( $xPlace, $xText )
+	{
+	$x = [System.Windows.Forms.ProgressBar]::new();
+	$x.Text = $xText;
+	$xPlace.Controls.Add( $x );
+	return $x;
+	}
+
+
+
+
+<#
+.SYNOPSIS
+RadioButton
+	.Autosize
+#>
+function GUI-Control-Radiobutton( $xPlace, $xText )
+	{
+	$x = [System.Windows.Forms.RadioButton]::new();
+	$x.Text = $xText;
+	$xPlace.Controls.Add( $x );
+	return $x;
+	}
+
+
+
+<#
+.SYNOPSIS
+Textbox/Control
+	.Autosize
+	.Location<-Point
+	.Width/Height
+	.BackgroundColor/ForegroundColor
+	.Font
+	+
+	.Multiline < T/F
+	.TextAlign
+
+#>
+function GUI-Control-Textbox( $xPlace, $xText )
+	{
+	$x = [System.Windows.Forms.Textbox]::new();
+	$x.Text = $xText;
+	$xPlace.Controls.Add( $x );
+	return $x;
+	}
+
+
+
+
+<#
+.SYNOPSIS
+Bezier curve
+
+#>
+function GUI-Graphics-Bezier( $xCanvas, $x4XY, $xPen )
+	{
+	if( $null -eq $xPen   ){ $xPen = GUI-Graphics-Pen }
+
+	# 4XY points to draw a Bezier Curve
+	[void]
+	$xCanvas.DrawBezier( 
+		$xPen, 
+		$x4XY[0], $x4XY[1],
+		$x4XY[2], $x4XY[3],
+		$x4XY[4], $x4XY[5],
+		$x4XY[6], $x4XY[7]
+		)
+	}
+
+
+
+<#
+.SYNOPSIS
+Box/Empty
+
+#>
+function GUI-Graphics-Box( $xCanvas, $xTLWH, $xPen )
+	{
+	if( $null -eq $xCanvas ){ throw "AAA: BAD GRAPHICS CONTAINER!!!" } 	
+	if( $null -eq $xPen   ){ $xPen = GUI-Graphics-Pen } 	
+
+	$xCanvas.DrawRectangle(
+		$xPen,
+		$xTLWH[0], $xTLWH[1], $xTLWH[2], $xTLWH[3]
+		)
+	
+	return [void]
+	}
+
+<#
+.SYNOPSIS
+Box/Fill
+
+#>
+function GUI-Graphics-BoxX( $xCanvas, $xTLWH, $xBrush )
+	{
+	if( $null -eq $xCanvas ){ throw "AAA: BAD GRAPHICS CONTAINER!!!" } 	
+	if( $null -eq $xBrush  ){ $xBrush = GUI-Graphics-Brush } 
+
+	$xCanvas.DrawRectangle(
+		$xBrush,
+		$xTLWH[0], $xTLWH[1], $xTLWH[2], $xTLWH[3]
+		)
+	
+	return [void]
+	}
+
+
+<#
+.SYNOPSIS
+Ellipse/Circle/Empty
+
+#>
+function GUI-Graphics-Ellipse( $xCanvas, $xTLWH,  $xPen )
+	{
+	if( $null -eq $xPen ){ $xPen = GUI-Graphics-Pen } 	
+	return $xCanvas.DrawEllipse( $xPen, $xTLWH[0], $xTLWH[1], $xTLWH[2], $xTLWH[3] );
+	}
+
+
+<#
+.SYNOPSIS
+Ellipse/Circle/Filled
+
+#>
+function GUI-Graphics-EllipseX( $xCanvas, $xTLWH,  $xBrush )
+	{
+	if( $null -eq $xBrush  ){ $xBrush = GUI-Graphics-Brush } 	
+	return $xCanvas.FillEllipse( $xBrush, $xTLWH[0], $xTLWH[1], $xTLWH[2], $xTLWH[3] );
+	}
+
+
+	
+<#
+.SYNOPSIS
+lINE
+
+#>
+function GUI-Graphics-Line( $xCanvas, $xTLBR, $xPen = (GUI-Graphics-Pen) )
+	{
+	$xCanvas.DrawLine( 
+		$xPen,
+		$xTLBR[0], $xTLBR[1], 
+		$xTLBR[2], $xTLBR[3]
+	)
+
+	}
+
+
+<#
+.SYNOPSIS
+Graphics
+
+#>
+function GUI-Graphics-Canvas( $xPlace )
+	{
+	return $xPlace.CreateGraphics();
+	}
+
+
+<#
+.SYNOPSIS
+Brush
+with defaults ~> BLACK
+#>
+function GUI-Graphics-Brush( $xColor = [System.Drawing.Color]::Black)
+	{
+	return [System.Drawing.SolidBrush]::new( $xColor );
+	}
+	
+
+<#
+.SYNOPSIS
+Pen
+with defaults ~> BLACK/1
+#>
+function GUI-Graphics-Pen( $xColor = [System.Drawing.Color]::Black, $xWidth = 1 )
+	{
+	return 	[System.Drawing.Pen]::new( $xColor, $xWidth );
+	}
+
+
+
+<#
+.SYNOPSIS
+Text
+with defaults ~> BLACK/1
+#>
+function GUI-Graphics-Text(
+	$xCanvas,  
+	$xText, 
+	$xFont  = [System.Drawing.Font]::new( "Times", 20 ),
+	$xBrush = ( GUI-Graphics-Brush ),
+	$xArea  = [System.Drawing.RectangleF]::new( 111, 111, 100, 200) 
+	)
+	{
+	$xCanvas.DrawString( 
+		$xText, 
+		$xFont, 
+		$xBrush,
+		$xArea
+		)
+
+	return [void]
+	}
+
+
+
+
+
+main;

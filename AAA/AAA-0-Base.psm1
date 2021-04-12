@@ -10,7 +10,7 @@ Import-Module -Name C:\DAT\PowerShell\AAA\AAA-0-Base.psm1 -Force
 
 # PREPARE ENVIRONMENT 
 Set-StrictMode -Version 5.0;
-$Host.PrivateData.ErrorForegroundColor="green"
+#$Host.PrivateData.ErrorForegroundColor="green"
 
 #ASSEMBLIES
 Add-Type -AssemblyName System.Windows.Forms;
@@ -21,8 +21,11 @@ Add-Type -AssemblyName System.Speech
 
 
 $global:AAA = @{ 
-	Boot = Get-Date; 
-	Credential = $null;
+	System = @{
+		Boot       = Get-Date; 
+		Credential = $null;
+		Editor     = "C:\APL\Microsoft\Code64\Code.exe"
+		}
 	
 	Folders = @{
 		APL = "C:\APL";
@@ -42,6 +45,7 @@ $global:AAA = @{
 		# Text-Template
 		}
 	
+	
 	}
 
 $global:AAA.Folders += @{
@@ -50,6 +54,7 @@ $global:AAA.Folders += @{
 	LinksX   = $AAA.Folders.DAT + "\#LinksX"
 	Scripts  = $AAA.Folders.DAT + "\#Scripts"
 	ScriptsX = $AAA.Folders.DAT + "\#ScriptsX"
+	Powershell = $AAA.Folders.DAT + "\Powershell"
 	}
 
 
@@ -84,61 +89,11 @@ $global:AAAX = @{
 	}
 
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-#
-#  AAAX-Fix
-#
-
-function AAA-On-2remove()
-	{
-	#  |A|L|I|AS|
-	Set-Alias Alias		"Get-Alias"			# Alias command
-	Set-Alias Delete	"Remove-Item"
-	Set-Alias Print		"Write-Host"
-	Set-Alias Input		"Read-Host"
-	Set-Alias Pause		"Start-Sleep"		# seconds/-milliseconds
-	Set-Alias Wait		"Start-Sleep"		# seconds/-milliseconds
-	Set-Alias Help		"Get-Help"
-	Set-Alias Processes	"Get-Process"
-
-	#  |K|E|Y|S|
-	Set-PSReadlineKeyHandler -Chord Tab -Function MenuComplete
-
-	# Libraries initialization
-	import-module -Scope Global -name 'AAA\AAASystem.psm1' 
-	import-module -Scope Global -name 'AAA\AAASystemX.psm1'
-	import-module -Scope Global -name 'AAA\AAAOther.psm1'
-
-	# READY audio alert
-	[System.Console]::beep( 111, 11)
-	[System.Console]::beep( 222, 22)
-	[System.Console]::beep( 333, 33)
-	[System.Console]::beep( 444, 44)
-
-	}
-
-
-
-
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#
-#  |*|
-#
-
-function ~() { Set-Location $env:USERPROFILE  }
-
-function _() { AAA-Classes;   }
-
-function AAA-Check()          { return $true }
-
-
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
 #  |A|A|A|
 #
-
 
 
 <#
@@ -149,34 +104,32 @@ function AAA- { AAA-Functions }
 
 
 <#
+--------------------------------------------------------------------------------
 .SYNOPSIS
 Present a Text message to the user
 
-.DESCRIPTION
 Accept 
 . a single string
 . a Array of trings
 
-.EXAMPLE
+.NOTES
 AAA-Alert "1 22 333"
-
-.EXAMPLE
 AAA-Alert 1, 22, 333
 
-.NOTES
 REFACTOR***
 SIMPLIFY
 PSEUDO-FUNCTION-OVERLOAD
 DECORATOR STRING AUTO-CHANGE
 for String and String[] ~> if ( $xData -is [array] ) { } else { }
+--------------------------------------------------------------------------------
 #>
 function AAA-Alert( $xData ) 
 	{
 	Sound-Plim;
 
-	$xPattern = String-Center ( String-Pattern-Stair "*" 5 );
-	$xData = String-Center $xData;
-	$xPattern 
+	$xPattern = Strings-Pad-Center ( Pattern-Stair "*" 5 );
+	$xData = Strings-Pad-Center $xData -xSize $Host.UI.RawUI.WindowSize.Width;
+	$xPattern
 	$xData;
 	Array-Invert $xPattern;
 
@@ -197,15 +150,23 @@ function AAA-Alias
 	{
 
 	# LANGUAGE
+	#1
 	Set-Alias -Scope "global" -Name a -Value Get-alias 
 	Set-Alias -Scope "global" -Name v -Value variables
 
+	#2
 	Set-Alias -Scope "global" -Name hx -Value historyX
 	Set-Alias -Scope "global" -Name hi -Value Invoke-History
 	Set-Alias -Scope "global" -Name so -Value Select-Object
 	Set-Alias -Scope "global" -Name wo -Value Where-Object
 
+	#3
+	Set-Alias -Scope "global" -Name err -Value errorX
+
+	#4
 	Set-Alias -Scope "global" -Name vars  -Value variables
+
+	#5+
 	Set-Alias -Scope "global" -Name funcs -Value functions
 	Set-Alias -Scope "global" -Name servs -Value services
 	Set-Alias -Scope "global" -Name alias -Value Get-alias
@@ -264,22 +225,6 @@ function AAA-Bag()
 
 <#
 .SYNOPSIS
-
-#>
-function AAA-Classes
-	{
-	# special case list functions
-	$x = "*-"
-	Get-Command $x -CommandType function
-	Get-Command $x -CommandType cmdlet
-	Get-Command $x -CommandType alias
-	}
-
-
-
-
-<#
-.SYNOPSIS
 Get the comments present immediatly above the function
 up to the end of the previous one
 acts as a quick-help...
@@ -299,7 +244,9 @@ function AAA-Comments( [string]$xName )
 
 
 <#
+.SYNOPSIS
 Credential grab
+
 #>
 function AAA-Credential
 	{
@@ -311,77 +258,447 @@ function AAA-Credential
 
 
 
+
+
+
+
 <#
+.SYNOPSIS
+Prepare a Debug session for the argumented function
+
+AAA-Debug <function> [-On|-Off]
+>Debug@Profile
+
+
+
+#>
+function AAA-Debug( 
+	$xFunction, 
+	[switch] $xClear 
+	)
+
+	{
+
+	# ?CLEAR DIRECTIVE
+	if ( $xClear )
+		{  
+		"Removing all breakpoints..."
+		Get-PSBreakpoint | Remove-PSBreakpoint;
+		#EXIT/1
+		return
+		}
+
+	# no argument
+	if ( $null -eq $xFunction )	
+		{
+		# ?MULTIPLE BREAKPOINTS SET??
+		$x = Get-PSBreakpoint;
+
+		if ( $null -eq $x )   { "No breakpoints are active..."; return; }		
+		if ( $x -is [array] ) { "Multiple breakpoints are set..."; return; }
+
+		"Debug is activated on funcion call: <{0}>" -f $x.Command ;
+		#EXIT/2
+		Return
+		}
+
+	
+	# ELSE 
+	# function name is valid
+	# SET THE BREAKPOINT
+	if ( Get-Command -Name $xFunction -ErrorAction SilentlyContinue	)
+		{
+		"Debug breakpoint is now set on <{0}>..." -f $xFunction
+		Set-PSBreakpoint -Command $xFunction
+		#EXIT/3
+		return;
+		}
+
+	"Function/Command <{0}> not found..." -f $xFunction
+	#EXIT/-1
+	
+	}
+
+
+
+
+<#
+.SYNOPSIS
+Jump to function in the Editor (default is VSCode|AAA.Editor)
+
+AAA-Edit <function>
+
+?argument name
+?function-name exists
+?get-file ?get-line
+!see-module !see-AAA$lib-path
+!Invoke VSCode --goto <file>:<line>
+
+#>
+function AAA-Edit( [string] $xName )
+	{
+
+	# ?did the function exists??
+	# we will need to know the module name
+	$xFunction = `
+		Get-Command `
+			-CommandType Function `
+			-Name $xName `
+			-ErrorAction SilentlyContinue
+
+	# Function does not exists...
+	if ( $null -eq $xFunction ) { throw "$xName function does not exist..." }
+
+	# Realize TEXT to seach and the MODULE name
+	$xText   = "Function[\s+]{0}" -f $xName
+	
+	# Search/Filter the Library module/file for the function name
+	$x = ( Get-Content $xFunction.Module.Path | Select-String -Pattern $xText )
+
+	if ( $null -eq $x ) { throw "$xName not found..." }
+
+	# Launch AAA/Editor and jump to line
+	Start-Process `
+		-FilePath $AAA.System.Editor `
+		-ArgumentList ( "--goto {0}:{1}" -f $xFunction.Module.Path, $x[0].LineNumber );
+
+	}
+
+
+
+
+<#
+.SYNOPSIS
+Test for existence of ...
+* Proof-of-concept for intuitive/explorative expressions
+
+-var		* (default)
+-function	* ?null && PS-Function data
++
+-file		*
+-folder		*
+
+
+?return
+	cumulative ~> =0/1..n
+	-or-
+	exclusive ~> 1st hit collapses result
+
+
+#>
+function AAA-Exists `
+	( 
+	[string] $xName, 
+	[switch] $Variable,
+	[switch] $Function,
+	[switch] $File,
+	[switch] $Folder
+	)
+	{
+	
+	if ( [System.String]::IsNullOrWhiteSpace( $xName ) )
+		{
+		throw `
+			"""
+			AAA-Exists
+			a Name must be provided... 
+			default type is -Variable!
+			"""
+		}
+
+	# VARIABLE CHECK
+	if ( $Variable )
+		{ 
+		$x = `
+			try { Out-Null -InputObject ( invoke-expression ( "$" + $xName )); $true } 
+			catch { $false } 
+
+		#QUIRK*** return ( try...  ) *was not working
+		return $x;
+		}
+
+	# FUNCTION-CHECK
+	if ( $Function )
+		{
+		return `
+			( $null -ne (Get-Command -Type Function -Name $xName -ErrorAction SilentlyContinue))
+		}
+
+	# FILE-CHECK
+
+
+	# FOLDER-CHECK
+
+
+	# ???-CHECK
+
+
+	}
+
+
+
+<#
+.SYNOPSIS
 List all AAA-* functions
 >AAA-Scripts
 #>
 function AAA-Functions
 	{
+
+	# GET NAME OF CALLING FUNCTION
+	# ANALISING LAST-CALLER ON THE CALLING-STACK
 	$x = ( Get-PSCallStack )[1].FunctionName
+
+	# ?*-ABOUT exits?? && Call it
+	$xAbout = $x + "About"
+	if ( AAA-Exists $xAbout -Function ){ .( $xAbout ) }
+
 	Get-Command -CommandType function -Name ( "{0}*" -f $x )
 	""
 	}
 
 
-
-# INJECT GROUP-MARKERS IN A SIMPLE ARRAY
-# PRIMARY USE IS FOR AAA-MENU
-function AAA-Groupify( $xArray, $xGroups )
-	{
-	$xGrouped = @();
-	$xSentinel = "";
-	# $xSentinel = "`n" + $xGroups[ 0 ];
-	# $xGrouped += "`n" + $xGroups[ $x ];
-
-	for( $x=0; $x -lt $xArray.Length; $x++ )
-		{
-
-		if ( $xGroups[ $x ] -ne $xSentinel )
-			{
-			$xGrouped += "`n" + $xGroups[ $x ];
-			$xSentinel = $xGroups[ $x ];
-			}
-
-		$xGrouped += $xArray[ $x ];
-		}
-
-	return $xGrouped;
-	}
-
-
-# Scan a group column
-# Returning group change
-function AAA-Groupness( $xGroups )
-	{
-	$xArray = @();
-	$xLast = "";
-
-	for( $x = 0; $x -lt $xGroups.Length; $x++ )
-		{
-		if ( $xGroups[ $x ] -ne $xLast) 
-			{ 
-			$xArray += $x;
-			$xLast =  $xGroups[ $x ]
-			}
-		}
-
-	Return $xArray
-	} 
-
-
-
 <#
+.SYNOPSIS
 Get Comments sitting before function code
 Regex 
 . find >\n\s*function\s+$name\s+(
 . then backsearch for \n\s*<
 
+.NOTES
+about_ActivityCommonParameters
+about_Aliases
+about_Alias_Provider
+...
+about_Certificate_Provider
+...
+about_Enum                            
+about_Environment_Provider            
+about_Environment_Variables           
+about_Escape_Characters               
+about_Eventlogs                       
+about_Execution_Policies              
+about_FileSystem_Provider             
+...
+about_Format.ps1xml                   
+about_Functions                       
+about_Functions_Advanced              
+about_Functions_Advanced_Methods      
+about_Functions_Advanced_Parameters   
+about_Functions_CmdletBindingAttribute
+about_Functions_OutputTypeAttribute   
+about_Function_Provider               
+about_Group_Policy_Settings           
+about_Hash_Tables                     
+about_Hidden                          
+about_History                         
+about_If                              
+about_InlineScript                    
+about_Jobs                            
+about_Job_Details                     
+about_Join                            
+about_Language_Keywords               
+about_Language_Modes                  
+about_Line_Editing
+...
+about_Parallel                        
+about_Parameters                      
+about_Parameters_Default_Values       
+about_Parameter_Sets                  
+about_Parsing                         
+about_Parsing_LocTest                 
+about_Path_Syntax                     
+about_Pipelines                       
+about_PowerShell.exe                  
+about_PowerShell_exe                  
+about_PowerShell_Ise.exe              
+about_PowerShell_Ise_exe              
+about_Preference_Variables            
+about_Profiles                        
+about_Prompts                         
+about_Properties                      
+about_Providers                       
+about_PSConsoleHostReadLine           
+about_PSModulePath                    
+about_PSReadline                      
+about_PSSessions                      
+about_PSSession_Details               
+about_PSSnapins                       
+about_Quoting_Rules                   
+about_Redirection                     
+about_Ref                             
+about_Registry_Provider               
+about_Regular_Expressions             
+about_Remote                          
+about_Remote_Disconnected_Sessions    
+about_Remote_FAQ                      
+about_Remote_Jobs                     
+about_Remote_Output                   
+about_Remote_Requirements             
+about_Remote_Troubleshooting          
+about_Remote_Variables                
+about_Requires                        
+about_Reserved_Words                  
+about_Return                          
+about_Run_With_PowerShell             
+about_Scheduled_Jobs                  
+about_Scheduled_Jobs_Advanced         
+about_Scheduled_Jobs_Basics           
+about_Scheduled_Jobs_Troubleshooting  
+about_Sequence                        
+about_Session_Configurations          
+about_Session_Configuration_Files     
+about_Signing                         
+about_Simplified_Syntax               
+...
+about_Updatable_Help                  
+...
+about_Windows_PowerShell_5.0          
+about_Windows_Powershell_5.1          
+about_Windows_PowerShell_ISE          
+about_Windows_RT
+...
+about_WQL
+...
+about_BeforeEach_AfterEach
+...
+about_should                          
+about_TestDrive                       
+about_Mdbc                            
+
+about_Scheduled_Jobs                  
+about_Scheduled_Jobs_Advanced         
+about_Scheduled_Jobs_Basics           
+about_Scheduled_Jobs_Troubleshooting  
+about_ActivityCommonParameters        
+about_Checkpoint-Workflow             
+
+* ?exist in?? ?6.x ?7x
+about_ForEach-Parallel                
+about_InlineScript                    
+about_Parallel                        
+about_Sequence          
+
+* WORKFLOWS
+about_Checkpoint-Workflow
+about_Suspend-Workflow                
+about_WorkflowCommonParameters
+about_Workflows
+
+
+* DSC
+about_Classes_and_DSC
+about_DesiredStateConfiguration
+about_DscLogResource
+
+
+
 #>
 function AAA-Help( $xItem )
 	{
-	AAA-Warn "Get Comments sitting before function code"
+	
+	$x = 
+		"about_", 
 
-	Get-Content function:\$xItem
+		".TYPES", 
+		"Types.ps1xml",
+		"Type_Accelerators",
+		"Type_Operators",
+		"Variables",
+		"Variable_Provider",
+		"Scopes",
+		"Using",
+
+		".TEXT",
+		"Wildcards",
+		"Split",		
+
+		".OPERATORS",
+		"Operators",
+		"Operator_Precedence",
+		"Arithmetic_Operators",
+		"Assignment_Operators",
+		"Comparison_Operators",
+		"Logical_Operators",
+
+		".COLLECTIONS",
+		"Arrays",
+		"Automatic_Variables",         
+
+		".FLOW",
+		"Do",
+		"for",
+		"foreach",
+		"While",
+		"Switch",
+		"Break",
+		"Continue",
+		"Throw",		
+		"Trap",
+		"Try_Catch_Finally",
+
+		".OOP",
+		"Classes",
+		"Methods",
+		"Objects",
+		"Object_Creation",
+
+		".LANGUAGE",
+		"Command_Precedence",
+		"Command_Syntax", 
+		"Comment_Based_Help",
+		"CommonParameters",
+		"Core_Commands",
+		"Data_Sections",
+		"Debuggers",
+		"Locations",
+		"Logging",
+		"Modules",
+		"Mocking",
+		"Numeric_Literals",
+		"PackageManagement",
+		"Pester",
+		"Scripts",
+		"Script_Blocks",
+		"Script_Internationalization",
+		"Special_Characters",
+		"Splatting",
+		"Transactions",
+		
+		".OS",
+		"CimSession",
+		"WMI",
+		"WMI_Cmdlets",
+		"WS-Management_Cmdlets",
+		"WSMan_Provider",
+
+		".JOBS",
+		"Scheduled_Jobs",
+		"Scheduled_Jobs_Basic",
+		"Scheduled_Jobs_Advanced",
+
+		".XXX"
+	
+		;
+	
+	""
+
+	$x += "Quit...";
+
+	AAA-Alert `
+		"2DO*** UNFOLD, REMAINING ITEMS, ... ", `
+		"", `
+		"Powershell ~> about_*", `
+		"";
+
+	$xx = aaa-menu $x;
+
+	if ( $xx -eq $x.length -1 ) { return }
+
+	$xxx = 'about_' + $x[ $xx ];
+
+	Get-Help -Name $xxx -ShowWindow;
+
 	}
 
 
@@ -471,257 +788,94 @@ function AAA-Logo
 
 
 
-###############################################################################
-# Simple menu
-#
-#
 
-# return the selected Index
-function AAA-Menu( $xOptions, $xGroups = $null )
+<# 
+.SYNOPSIS
+Message 
+
+#>
+function AAA-Message( $xMessage = "OK to continue..." ) 
 	{
-	$xMenu = [AAA_Menu]::New();
-	$xMenu.xOptions = $xOptions;
-
-	# GROUP-BREAKS APPROPRIATION/AWERNESS
-	if ( $xGroups ) 
-		{
-		# REALIZE GROUPS
-		$xMenu.xGroups = AAA-Groupness $xGroups 
-		foreach( $x in $xMenu.xGroups )	{ $xMenu.xGroupsX += $xGroups[ $x ] }
-		}
-	else
-		{
-		# AUTO-GENERATE DEFAULT GROUP (All-Elements)
-		$xMenu.xGroups  += 0;
-		$xMenu.xGroupsX += $null;
-		}
-	
-	$xMenu.Go();
-	return $xMenu.xIndex;
-	}
-
-Class AAA_Menu
-	{
-	$xKey=0;						# [System.ConsoleKeyInfo.key] 
-	$xChar=0;						# [System.ConsoleKeyInfo.keyChar] 
-	$xKeyPrevious;
-	$xOptions = @();			# string[]
-	$xCount   = 0;
-	$xIndex   = 0;
-	$xCursor;
-	$xSeparator = "`n";
-
-	$xGroups  = @();			# int[]
-	$xGroupsX = @();			# String[]
-	
-	$keys   = $global:AAAX.Keys;
-	$xInk   = $global:AAAX.Colors.Ink;
-	$xPaper = $global:AAAX.Colors.Paper;
-
-	# Globals
-	$UI = $global:host.ui.RawUI;
-	$AAAX =  $global:AAAX;
-
-
-	# DISPLAY | WAIT-FOR-KEY | ...
-	Go()
-		{
-		$this.xCount  = $this.xOptions.Length;
-		$this.xCursor = $global:Host.UI.RawUI.CursorPosition;
-
-		while ( $this.xKey -ne $this.keys.Enter ) 
-			{
-			$this.Processor();
-
-			$global:host.UI.RawUI.CursorPosition = $this.xCursor;
-			$this.Show();
-
-			# Input/get Key code
-			# $this.xKey = $global:host.UI.RawUI.ReadKey( "NoEcho,IncludeKeyDown" ).VirtualKeyCode;
-			$x = [Console]::ReadKey();
-			$this.xKey = [int]$x.Key;
-			$this.xChar = $x.keyChar;
-			}
-
-		}
-
-
-	# DISPLAY GROUPS
-	Show()
-		{
-		$xMax = $this.xGroups.Length;
-
-		# GROUPS DISPLAY
-		for( $xGroupIx = 0; $xGroupIx -lt $xMax; $xGroupIx++ )
-			{
-			#
-			if ( $this.xGroupsX[ $xGroupIx ] ) 
-				{ Write-Host $this.xGroupsX[ $xGroupIx ] }
-
-			# get group limit low-high element index
-			$xRangeLo = $this.xGroups[ $xGroupIx ];
-
-			$xRangeHi = `
-				if ( $xGroupIx -lt ($xMax-1) ) 
-					{ $this.xGroups[ $xGroupIx + 1 ] } 
-				else 
-					{ $this.xCount };
-
-			# OPTIONS/GROUPS DISPLAY
-			for( $xOptionIx = $xRangeLo; $xOptionIx -lt $xRangeHi; $xOptionIx++ )
-				{
-				$xOptionTx = $this.xOptions[ $xOptionIx ];
-
-				# prevent text from break line?
-				if ( $this.UI.CursorPosition.X + $xOptionTx.Length -gt $this.UI.WindowSize.Width )
-					{ Write-Host ""; }
-
-				# render non-selected options
-				if ( $xOptionIx -ne $this.xIndex ) 
-					{
-					Write-Host -NoNewLine $xOptionTx;
-					}
-				else 
-					{
-					# render Selected option
-					$global:host.ui.RawUI.ForegroundColor = $global:AAAX.Colors.Paper;
-					$global:host.ui.RawUI.BackgroundColor = $global:AAAX.Colors.Ink;
-					Write-Host -NoNewline $xOptionTx;
-					$global:host.ui.RawUI.ForegroundColor = $global:AAAX.Colors.Ink;
-					$global:host.ui.RawUI.BackgroundColor = $global:AAAX.Colors.Paper;									
-					}
-
-				Write-Host -NoNewLine " ";
-				}
-
-			Write-Host "`n";
-			}
-		}
-
-
-	# PROCESS USER INPUT
-	Processor()
-		{
-		# VACCINE using number arrays 
-		# ( no strings => no .StartsWith() )
-
-		switch( $this.xKey )
-			{
-			$this.keys.Home  { $this.xIndex = 0                }
-			$this.keys.End   { $this.xIndex = $this.xCount - 1 }
-			$this.keys.Space { $this.xIndex++  }
-			$this.keys.Right { $this.xIndex++  }
-			$this.keys.Left  { $this.xIndex--  }
-			$this.keys.Up    { $this.PreviousGroup()  } 
-			$this.keys.Down  { $this.NextGroup()      }
-
-			# TODO*** REFACTOR TO DEFAULT
-			#0..9/A..Z
-			Default 
-				{
-				if ( $this.xChar -eq 0 ) 
-					{ Sound-Plim; }
-				else
-					{
-					# VACCINE $xIndex from GETTING NON VALID ordinals
-					$this.xIndex++;
-					$x = Array-ScanNext $this.xOptions "$($this.xChar)*" $this.xIndex;
-					if ( $x -ne -1 ) { $this.xIndex = $x }
-					}
-			 	}
-			}
-
-			if ( $this.xIndex -lt 0               ) { $this.xIndex = $this.xCount - 1 }			
-			if ( $this.xIndex -gt $this.xCount -1 ) { $this.xIndex = 0                }
-
-		}
-		
-	
-	# SCAN GROUP-MARKS FOR THE 1ST GRATER THAN OPTION-INDEX
-	NextGroup()
-		{
-		# AT LEAST FIXED '<N>=LAST' GROUP IS ALWAYS HIT
-		for( $x = 0; $x -lt $this.xGroups.Length - 1; $x++ )
-			{ if( $this.xIndex -gt $this.xGroups[ $x ] ) { continue; } else { break; } }
-
-		# QUIRK: THERE IS NO LAST ELEMENT IN GROUP SECTIONS
-		# IF IN LAST GROUP... NEXT WILL BE 0
-		if ( $x -eq $this.xGroups.Length - 1 ) 
-			{ $this.xIndex = 0 } else { $this.xIndex = $this.xGroups[ $x + 1 ] }
-		
-		}
-
-
-
-	# SCAN GROUP-MARKS FOR THE 1ST LESS THAN OPTION-INDEX
-	PreviousGroup()
-		{
-		# VACCINE: ?IS AT TOP ALREADY THEN GOTO MAX
-		if ( $this.xIndex -eq 0 ) { $this.xIndex -eq $this.xCount - 1 }
-
-		# AT LEAST FIXED '0=1ST' GROUP IS ALWAYS HIT
-		for( $x = $this.xGroups.Length - 1 ; $x -gt 0; $x-- )
-			{ if( $this.xIndex -lt $this.xGroups[ $x ] ) { continue } else { break; }}
-		
-		$this.xIndex = $this.xGroups[ $x - 1 ]; 
-		}
-
+	"Use AAA-Alert()"
 	}
 
 
 
-# Option
-# 0. OK
-# 1. OK/cancel
-# 2. Yes/No
-function AAA-Message( $xMessage="...", $xTitle="...", $xOption = 0, $xImage = 0 )
+<# 
+.SYNOPSIS
+GUI Message dialog assuming/infering optional most usual parameters
+	-xMessage = "OK ..." ___ [string]
+	-xTitle   = "..." ______ [string]
+	-xOptions = 0 __________ >Option
+	-xIcon    = 0 __________ >Icon
+
+~Option	: OK | OK/Cancel | Yes/No | Yes/No/Cancel | AbortRetryIgnore | RetryCancel
+~Icon	: None | Information | Exclamation | Question | Error
+
+#>
+function AAA-MessageX( 
+	$xMessage = "OK to continue...", 
+	$xTitle = "...", 
+	$xOption = 0, 
+	$xIcon = 0 
+	) 
 	{
 
 	# BUTTONS FUNCTIONAL SELECT 
-	$xButtons = @( `
+	$xOption = @( `
 		[System.Windows.Forms.MessageBoxButtons]::OK,
 		[System.Windows.Forms.MessageBoxButtons]::OKCancel,
-		[System.Windows.Forms.MessageBoxButtons]::YesNo
-		)[$xOption];
+		[System.Windows.Forms.MessageBoxButtons]::YesNo,
+		[System.Windows.Forms.MessageBoxButtons]::YesNoCancel,
+		[System.Windows.Forms.MessageBoxButtons]::AbortRetryIgnore
+		[System.Windows.Forms.MessageBoxButtons]::RetryCancel
+		)[ $xOption ];
 
 	# ICONS FUNCTIONAL SELECT 
 	$xIcon = @( `
-		[System.Windows.Forms.MessageBoxIcon]::Information,
-		[System.Windows.Forms.MessageBoxIcon]::Exclamation,
-		[System.Windows.Forms.MessageBoxIcon]::Question, 
-		[System.Windows.Forms.MessageBoxIcon]::Error
-		)[ $xImage ];
+		[System.Windows.Forms.MessageBoxIcon]::None,
+		[System.Windows.Forms.MessageBoxIcon]::Information,		# Asterisk
+		[System.Windows.Forms.MessageBoxIcon]::Exclamation,		# Warning
+		[System.Windows.Forms.MessageBoxIcon]::Question,
+		[System.Windows.Forms.MessageBoxIcon]::Error			# Stop | Hand
+		)[ $xIcon ];
 
-	$x = [System.Windows.Forms.MessageBox]::Show( 
-		$xMessage,
-		$xTitle,
-		$xButtons,
-		$xIcon
-		)
-	
+	$x = `
+		[System.Windows.Forms.MessageBox]::Show( 
+			$xMessage,
+			$xTitle,
+			$xOption,
+			$xIcon
+			)		
+
 	return $x;
+
 	}
 
-function AAA-MessageOK( $x ) { AAA-Message $x }
-
-function AAA-MessageOC( $x ) { AAA-Message $x "OK/Cancel" 1 1; }
-
-function AAA-MessageYN( $x ) { AAA-Message $x "Yes/No" 2 2; }
 
 
 
 <#
+.SYNOPSIS
 Return a oProgress
+
 #>
-function AAA-Progress( $xMS = 1 )
+function AAA-Progress( $xPercent = 50 )
 	{
-	
+	Write-Progress `
+		-Activity "Grabbing data..." `
+		-Status "Inspecting..." `
+		-CurrentOperation "running..." `
+		-SecondsRemaining -1 `
+		-PercentComplete $xPercent
 	}
 
 
 
 <#
-# FAKE A PROGRESS process from 0..100
+.SYNOPSIS
+FAKE A PROGRESS process from 0..100
+
 #>
 function AAA-ProgressFake( $xMS = 1 )
 	{
@@ -740,6 +894,15 @@ function AAA-ProgressFake( $xMS = 1 )
 
 
 <#
+.SYNOPSIS
+Show AAA-Scripts Subspace
+#>
+function AAA-Script- { AAA-Functions }
+
+
+
+<#
+.SYNOPSIS
 get 1st line comment 
 
 #>
@@ -754,15 +917,25 @@ function AAA-Script-Comment( [string]$xScript )
 
 
 <#
+.SYNOPSIS
 Get <help>...</help> text inside the script
+
 #>
 function AAA-Script-Help( [string]$xScript )
 	{
-	$xData = Get-Content -Path $xScript
 
-	# scan for <help> (.*) </help>
-	# ?-regex
-	#
+	# if no argumented SCRIPTNAME 
+	# then grab name of calling script
+	if ( [string]::IsNullOrWhiteSpace( $xScript ) ){ $xScript = $MyInvocation.ScriptName }
+
+	# ?script file exists
+	if ( -not ( File-Exist $xScript )){ Exit }
+
+	# get FILE in a SINGLE-LINE
+	$x = Get-Content -Raw $xScript;
+	$x -match '(?s)<#\s*\.SYNOPSIS\s*(.*)\s+#>' | Out-Null
+	return $Matches[1];
+	# Variables $x; Pause;
 
 	}
 
@@ -778,9 +951,20 @@ DOS/.cmd Powershell/.ps1 Python/.py PERL/.pl PHP/.php ...
 function AAA-Script-List
 	{
 
-	# If invoked from script
+	# must only be invoked from inside a script
 	# PSCallStack element #1 is the caller Script metadata
 	$xScript = (( Get-PSCallStack)[ 1 ]).ScriptName;
+
+	# $null means not called from inside a SCRIPT
+	IF ( $null -eq $xScript )
+		{ 
+		AAA-Alert `
+			"AAA-Scripts-List", `
+			"Improper using...", `
+			"must only be invoked from inside a script..."
+
+		return $null;
+		}
 
 	$xFolder = $xScript | Split-Path -Parent
 	$xNameX  = $xScript | Split-Path -Leaf
@@ -823,7 +1007,7 @@ function AAA-Script-List
 			ForEach-Object `
 				{ `
 				String-Edge $_.BaseName `
-				( AAA-Script-Properties $_.FullName )`
+				( File-Propertyline $_.FullName )`
 				};
 
 		""
@@ -836,6 +1020,8 @@ function AAA-Script-List
 
 <#
 Self lister for AAA-Scripts .cmd/.ps1 of the form *- *--
+
+*2implement
 1st line comment is short description
 :OBS is multiline help
 
@@ -844,7 +1030,7 @@ function AAA-Script-ListX( [string]$xMark )
 	{
 	
 	# REFACTOR*** throw to soft-fail...
-	if ( $null -eq $xMark ) { throw "´`n`n AAA-ScriptsX $xMark is null...`n`n" }
+	if ( $xMark -eq '' ) { throw "´`n`n AAA-ScriptsX $xMark is null...`n`n" }
 	
 	$xFolder = $AAA.Folders.ScriptsX;
 	$xChar = $xMark[0];
@@ -859,28 +1045,18 @@ function AAA-Script-ListX( [string]$xMark )
 		@( 'Powershell/.ps1 *-', ( '^.*[^{1}]{0}\.ps1$' -f $xMark, $xChar ) )		
 		)
 
-	File-List $xData $xFolder;
-	}
+	For( $x=0; $x -lt $xData.Length; $x++ )
+		{
+		$xTitle = $xData[ $x ][ 0 ];
+		$xMatch = $xData[ $x ][ 1 ];
 
-
-
-
-<#
-String of Size + Created + Updated-Span + Attrs
-#>
-function AAA-Script-Properties( [string]$xScript ) 
-	{
-	# Read File-Properties struncture
-	$xProps = Get-ItemProperty $xScript;
-
-	# Size/Created/Updated-Span/attrs
-	$xData = `
-		"{0} {1} {2}" -f `
-			( Math-Bytes $xProps.Length ), `
-			( Date-Agely $xProps.LastWriteTime ), `
-			( Get-Date -Date $xProps.CreationTime -Format "yyyy.MM.dd" );
-
-	return $xData;
+		""
+		$xTitle;
+		String-Replicate "-" $xTitle.Length;
+		$xCount = File-List -xFolder $xFolder -xMatch $xMatch;
+		"{0} files" -f $xCount;
+		}
+	
 	}
 
 
@@ -1024,21 +1200,42 @@ function AAA-Warn( [string] $x )
 #  |A|R|R|A|Y|
 #
 
+
+<#
+.SYNOPSIS
+Array functionality
+
+#>
 function Array- { AAA-Functions }
 
-function Array-Declare( $xArray )
+
+<#
+.SYNOPSIS
+Return a Result-Array of 1st digit from Source-Array
+for purpouses of simple Alphabetic organization
+or alphaberic Groupify
+
+Used on [MN_]/AAA-Menu
+#>
+function Array-Alphadigit ( $xArray )
 	{
-	# $a = New-Object 'byte[,]' 2,2
-	# $a = New-Object 'string[,,]' 2,2,2
+	$xAlpha = @();
+
+	ForEach( $x in $xArray )	{ $xAlpha += $x.Substring(0,1).ToUpper(); } 
+	
+	return $xAlpha
 	}
 
 
+<#
+.SYNOPSIS
+TRUE IF $xPos is valid
 
-# TRUE IF $xPos is valid
-# 
-# ATT*** 
-#    $x[ -1 ] is valid
-#    $x[ 1.5 ] is rounded to $x[ 2 ]
+ATT*** 
+   $x[ -1 ] is valid
+   $x[ 1.5 ] is rounded to $x[ 2 ]
+#>
+
 function Array-Bounds( $xArray, $xPos ) 
 	{
 	$xPos = [math]::Abs( $xPos );
@@ -1048,8 +1245,39 @@ function Array-Bounds( $xArray, $xPos )
 	}
 
 
-# Gets a single colum from a multicolumn array 
-# and returns as a single column array
+
+<#
+.SYNOPSIS
+Scan the array
+Build a 
+Build a Result-Array from Source-Array 
+of indexes of change Points (inflexions)
+#>
+function Array-Changepoints( $xArray )
+	{
+	$xPoints = @();
+	$xLast = "";
+
+	for( $x = 0; $x -lt $xArray.Length; $x++ )
+		{
+		if ( $xArray[ $x ] -ne $xLast) 
+			{ 
+			$xPoints += $x;
+			$xLast =  $xArray[ $x ]
+			}
+		}
+
+	Return $xPoints
+	} 
+
+
+
+<#
+.SYNOPSIS
+Gets a single colum from a multicolumn array 
+and returns as a single column array
+
+#>
 function Array-Column( $xArray )
 	{
 	$xTemp = @();
@@ -1060,19 +1288,35 @@ function Array-Column( $xArray )
 
 
 <#
+.SYNOPSIS
+?declare
+
+#>
+function Array-Declare( $xArray )
+	{
+	# $a = New-Object 'byte[,]' 2,2
+	# $a = New-Object 'string[,,]' 2,2,2
+	}
+
+
+
+<#
+.SYNOPSIS
 Up-side-down an array...
 Rowwise (columns are not touched)
 
 #>
 function Array-Invert( $xArray )
 	{
+
 	$xMiddle = [Math]::Floor( $xArray.Length / 2 );
 	for( $x = 0; $x -lt $xMiddle; $x++ ) 
 		{ 
 		$xArray[ $x ], $xArray[ -$x-1 ] = $xArray[ -$x-1 ], $xArray[ $x ];
 		}
 
-	return $xArray;
+	# be sure to return an array
+	return ,$xArray;
 
 	}
 
@@ -1193,13 +1437,25 @@ function Array-Unique( $xArray )
 
 
 <#
+.SYNOPSIS
+Working with bytes...
+
+.NOTES
+
+
 #>
-function bytes- { AAA-Functions }
+function Bytes- { AAA-Functions }
 
 
 <#
+.SYNOPSIS
+Working with bytes...
+
+.NOTES
+
+
 #>
-function bytes-xxx 
+function Bytes-xxx 
 	{ 
 	# to text
 	$Bytes = [System.IO.File]::ReadAllBytes($Path)
@@ -1211,6 +1467,37 @@ function bytes-xxx
 
 	}
 
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#
+#  |C|O|N|S|O|L|E|
+#
+<#
+.SYNOPSIS
+Console functions
+
+#>
+
+
+function Console- { AAA-Functions }
+
+
+
+function Console-Color-Save( $x )
+	{ $x.Back, $x.Front = $Host.UI.RawUI.BackgroundColor, $Host.UI.RawUI.ForegroundColor; }
+
+
+function Console-Color-Invert()
+	{
+	$x, $xx = $Host.UI.RawUI.BackgroundColor, $Host.UI.RawUI.ForegroundColor;
+	$Host.UI.RawUI.BackgroundColor, $Host.UI.RawUI.ForegroundColor = $xx, $x;
+	}
+
+
+function Console-Color-Restore( $x )
+	{ $Host.UI.RawUI.BackgroundColor, $Host.UI.RawUI.ForegroundColor = $x.Back, $x.Front; }
 
 
 
@@ -1342,6 +1629,9 @@ function Date-Respan( $xTimespan )
 	}
 
 
+
+
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
 #  |M|A|P
@@ -1360,6 +1650,7 @@ Diverse Mappers like
 	MapNT -> Number-to-Text (Extense)
 
 #>
+
 function Map- { AAA-Functions }
 
 
@@ -1400,7 +1691,21 @@ function Math-Bytes ( $x )
 
 	}
 
+<#
 
+
+#>
+function Math-Ordinalex( [string]$x )
+	{
+	if( $x.length -gt 1  ){ if ( $x[-2] -eq "1" ){ return "th" } };
+	switch( $x[-1] )
+		{ 
+		1 { return "st" }; 
+		2 { return "nd" }; 
+		3 { return "rd" }; 
+		default { return "th" }  
+		};
+	}
 
 
 
@@ -1452,15 +1757,88 @@ function Object-Nullternative( $xTest, $xAlternative )
 
 
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#
-#  |S|T|R|I|N|G|
-#
 
+<#
+.SYNOPSIS
+Nullternative -or- Alternative to Null...
+
+Accept 
+. a single string
+. a Array of trings
+
+#>
+function Object-Nullternative( $xTest, $xAlternative ) 
+	{ 
+	if ( $null -eq $xTest ) { $xTest = $xAlternative } 
+	}
 
 
 
 <#
+.SYNOPSIS
+Rewritten for PS5 using iif(x,a,b) instead of PS7/x?a:b
+
+Reports the object content
+
+#>
+function Object-View( $xObject ) 
+	{ 
+
+	# DONT TEST NULLs
+	if ( $null -eq $xObject ) { AAA-Alert "<NULL>"; return; } 
+
+	$xObject.psobject.Properties `
+		| Sort-Object membertype `
+		| ForEach-Object `
+			{ `
+			[pscustomobject]@{ `
+				Member = $_.name; `
+				Type = $_.membertype; `
+				W = iif issettable "Y" ""; `
+				I = iif isInstance "Y" "N"; `
+				Value = $_.value } `
+			} `
+		| Format-Table -AutoSize
+
+	<# 
+	1. Detect if NULL ~> Exit
+	2. Detect if Collection ~> ?recurse
+	3. Get $x.PSObject 
+	4. Hashtable make from substanced properties
+	5. Hashtable make from null properties
+	6. Sort
+	7. Alphabetize [0, A-Z, _]
+	8. Show in grid
+
+	$xData = [ordered] @{};
+	$xNull = [ordered] @{};
+
+	$xObject.PSObject.Properties | `
+		ForEach-Object `
+			{ 
+			# if ( $_.value ) { $xData[ $_.name ] = $_.value; } 
+			# if ( $_.value ) { $xData.Add( $_.name, $_.value ) } 
+			if ( $_.value ) { $xData.Add( $_.name, $_.value ) } 
+			else { $xNull.Add( $_.name, "<null>" ) }
+			}
+
+	return $xData + $xNull;
+	# Out-GridView -InputObject $xData
+	#>
+
+	}
+	
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#
+#  |S|T|R|I|N|G|
+#
+#
+<#
+.SYNOPSIS.
 ? Grow 
 ? Invert sinle/multiple
 ? Inflate/Deflate
@@ -1474,124 +1852,289 @@ function String-  { AAA-Functions }
 
 
 
-function String-Add( [string] $xString, [string] $xAdd ) 
-	{}
+<#
+.SYNOPSIS.
+Assemble a array into a string...
+using SPACE as separator... or specify any string as separator
+
+String-Assenble 1,22,333 " | "
+String-Assenble -xStrings 1, 22, 333 -xSeparator " | "
+
+#>
+function String-Assemble( [string[]] $xStrings, $xGlue = "" ) 
+	{
+	return $xStrings -join $xGlue;
+	}
 
 
 
 <#
+.SYNOPSIS
+Deprecated... 
+To Remove...
+use String-Pad-Center
+
 Center <String> or <String[]>
 Parameter pattern-string to fill/auto is " "...
 Parameter for size/auto is console width...
 
-QUIRKS: Pseudo overload for String or Strings[]
+QUIRK***
+Pseudo overload for String or Strings[]
+
+
 #>
-function String-Center( $xString, [string]$xFill = ' ', $xSize )
+function String-Center( 
+	$xString = '<String-Center-Sample>', 
+	[string]$xFill = ' ',
+	$xSize = $Host.UI.RawUI.WindowSize.Width
+	)
 	{
-	
-	# PSEUDO OVERLOAD FOR STRING/STRING[]
-	# USING RECURSIVITY
-	if ( $xString -is [System.Array] )
-		{
-		$xStrings = @();
-		Foreach( $e in $xString ) 
-			{ $xStrings += ( String-Center $e $xFill $xSize ) }
-		
-		return $xStrings
-		}
-
-	# VACCINE: PREVENT OPERATOR CONFUSION ON NUMERIC -VS- STRING TYPE
-	$xString = [string]$xString
-
-	# 0/$null = adjust to console 
-	if ( $null -eq $xSize -or $xSize -eq 0 ) 
-		{ $xSize = $Host.UI.RawUI.WindowSize.Width }
-
-	$xLen = $xString.Length;
-	if ( $xLen -gt $xSize ) { return $xString.Substring( 0, $xSize ) }
-	
-	# GENERATED STRING CAN EXCEED $xSize
-	# (pure math solution can also sin for LESS then desired size)
-	$xHalf = [Math]::Floor( ( $xSize - $xLen ) / 2 / $xFill.Length );
-	$xData =  $xFill * $xHalf + $xString + $xFill * ++$xHalf 
-
-	# so FIX it to desired size
-	return $xData.Substring( 0, $xSize );
+	return ( String-Pad-Center -xString $xString -xFill $xFill -xSize $xSize);
 	}
 
 
+
+<#
+.SYNOPSIS.
+2DO
+
+
+.NOTES
+
+#>
 function String-Cut( [string] $xString, [int] $xSize ) 
 	{}
 
 
 <#
-returns a sized string 
-composed by 2 other strings as edges
+.SYNOPSIS
+Returns a sized string 
+composed by 2 other strings on the edges
 if no size is supplied console width is assumed
+
+* If you need several elements displayed
+Compose the Strings for Left and Right :-)
+
+TEST:
+	String-Edge "Dock-Left" "Dock-Right"
+	String-Edge "Dock-Left" "Dock-Right" 80
+
+SEE:
+	String-Center
+
 #>
 function String-Edge( [string]$xLeft, [string]$xRight, $xSize )
 	{
+
 	if ( $null -eq $xSize ){ $xSize = $Host.UI.RawUI.WindowSize.Width }
 
+	$xSize--;
 	$xSize1 = $xLeft.Length;
 	$xSize2 = $xRight.Length;
 
-	# s1 > size
-	if ( $xSize1 -gt $xSize ) 
-		{  return ( $xLeft.Substring( 0, $xSize -4  ) + "..." ); }
+	# resize
+	if ( $xSize1 + $xSize2 -gt $xSize )
+		{
+		# ?too big... resize bigger
+		# and account for end in "..."
+		if ( $xSize1 -gt $xSize2 ) 
+			{ 
+			$xLeft  = $xLeft.Substring( 0,  $xSize - $xSize2 - 3 ) + "...";
+			$xSize1 = $xLeft.Length;
+			}
+		else 
+			{
+			$xRight = $xRight.Substring( 0,  $xSize - $xSize1 - 3 ) + "..." 
+			$xSize2 = $xRight.Length;
+			}
 
-	# s1 + s2 >  size
-	if ( ( $xSize1 + $xSize2 ) -gt $xSize ) 
-		{  return ( $xLeft + ( " " * ( $xSize - $xSize1 ))) }
+		}
+
 	
-	#s1 + s2 < size
-	return $xLeft + ( " " * ( $xSize - $xSize1 - $xSize2 )) + $xRight; 
-
+	return "{0}{1}{2}" -f $xLeft,  ( " " * ( $xSize - $xSize1 - $xSize2 + 1 ) ), $xRight;
+	
 	}
 
 
 
+
+
+
 <#
+.SYNOPSIS
 First N elements of the string
+
+>String-Tail
+
+.NOTES
 
 #>
 function String-Head( [string] $xString, [int] $xSize ) 
-	{}
+	{
+
+	}
 
 
 <#
+.SYNOPSIS.
 Invert String/String[]
-
 
 #>
 function String-Invert( $xString )
 	{
-	# PATTERN: PSEUDO OVERLOAD FOR STRING/STRING[]
-	# USES RECURSIVITY
-	if ( $xString -is [System.Array] )
-		{
-		$xStrings = @();
-		Foreach( $e in $xString ) 
-			{ $xStrings += ( String-Invert $e $xFill $xSize ) }
-		
-		return $xStrings
-		}
-	
-	Label String-Invert-Single
-	return $xStrings
-
-
-	Label String-Invert-Multiple
-	return $xStrings
-
+	"2DO***"
 	}
 
 
 
 <#
-	REFACTOR*** 
-	?force excess lenght and cut?? 
-	for composed strings
+.SYNOPSIS
+Get the index of the longest string
+#>	
+function String-Longest( [string[]]$xArray )
+	{ 
+	$xSize=0; 
+
+	for( $xx = 0; $xx -lt $xArray.length; $xx++ )
+		{  if( $xArray[ $xx ].length -gt $xSize ) 
+			{ 
+			$x = $xx; 
+			$xSize = $xArray[ $xx ].length;
+			};  
+		}; 
+
+	return $x
+	} 
+
+
+
+function String-Pad-  { AAA-Functions }
+
+
+<#
+.SYNOPSIS
+Center/Pad string with optional pad char
+if size is not argumented get the width of the console
+
+.NOTES
+String-Pad-Center "AAA"
+String-Pad-Center "AAA", "_"
+
+#>	
+function String-Pad-Center ( 
+	[String]$xString = "<String-Pad-Center default>", 
+	[string]$xFill = " ",
+	[int]$xSize = $Host.UI.RawUI.WindowSize.Width
+	)
+	{
+	
+	# IS SIZE GREAT THEN ARGUMENTED
+	$xLen = $xString.Length;
+	if ( $xLen -gt $xSize ) { return $xString.Substring( 0, $xSize ) }
+	
+	# GENERATED STRING CAN EXCEED $xSize
+	# (pure math solution can also sin for LESS then desired size)
+	[int]$xFilen = ( [Math]::Floor( ( $xSize - $xLen ) / 2 ) ) / $xFill.Length;
+
+	$xData =  $xFill * $xFilen + $xString + $xFill * ++$xFilen 
+
+	# so FIX it to desired size
+	return $xData.Substring( 0, $xSize );
+	}
+
+	
+
+<#
+.SYNOPSIS
+Left/Pad string
+if size is not argumented get width of console
+--------------------------------------------------------------------------------
+
+.NOTES
+Strings-Pad-Left "AAA"
+Strings-Pad-Left "AAA", "_"
+
+
+#>	
+function String-Pad-Left( 
+	[String]$xString = "<String-Pad-Left default>", 
+	[string]$xFill = " ",
+	[int] $xSize = $Host.UI.RawUI.WindowSize.Width
+	)
+
+	{
+
+	# IS SIZE GREAT THEN ARGUMENTED
+	$xLen = $xString.Length;
+	if ( $xLen -gt $xSize ) { return $xString.Substring( 0, $xSize ) }
+	
+	# GENERATED STRING CAN EXCEED $xSize or be truncated
+	# [int] will round up
+	[int]$xFilen = ( $xSize - $xLen ) / $xFill.Length + 1;
+
+	# so FIX it to desired size
+	return ( $xString + $xFill * $xFilen ).Substring( 0, $xSize );
+
+	}
+	
+
+
+
+<#
+.SYNOPSIS
+Right/Pad string to a defined size
+if size is not argumented console width is assumed
+--------------------------------------------------------------------------------
+
+.NOTES
+Strings-Pad-Right "1"
+Strings-Pad-Right "1" "22"
+
+#>	
+function String-Pad-Right( 
+	[String]$xString = "<String-Pad-Right default>", 
+	[string]$xFill = " ",
+	[int] $xSize = $Host.UI.RawUI.WindowSize.Width
+	)
+
+	{
+
+	# IS SIZE GREAT THEN ARGUMENTED
+	$xLen = $xString.Length;
+	if ( $xLen -gt $xSize ) { return $xString.Substring( 0, $xSize ) }
+	
+	# GENERATED STRING CAN EXCEED $xSize or be truncated
+	# [int] will round up
+	[int]$xFilen = ( $xSize - $xLen ) / $xFill.Length + 1;
+
+	# assure that rightmost xString is intact
+	# so first generate xFill... and truncate it
+	# then add the xString
+	return ($xFill * $xFilen).Substring( 0, $xSize - $xLen ) + $xString;
+	}
+
+
+
+
+<#
+.SYNOPSIS
+Alerter only...
+
+#>
+function String-Pattern { AAA-Alert "Use Pattern-*" }
+
+
+
+
+<#
+.SYNOPSIS
+REFACTOR*** 
+?force excess lenght and cut?? 
+for composed strings
+--------------------------------------------------------------------------------
+
+.NOTES
+
 #>
 function String-Replicate `
 	(
@@ -1608,11 +2151,420 @@ function String-Replicate `
 
 
 <#
+.SYNOPSIS
 Get Last N elements
+
+.NOTES
+
 #>
 function String-Tail( [string] $xString, [int] $xSize ) 
-	{}
+	{
+
+	}
 
 
 
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#
+#  |S|T|R|I|N|G|S|
+#
+#
+
+<#
+.SYNOPSIS
+String funcionality for collections
+
+
+#>
+function Strings-  { AAA-Functions }
+
+
+
+
+<#
+Uses String-Edge
+
+Strings-Edge xEdgeLeft $xEdgeRight
+
+returns String[]
+
+
+#>
+function Strings-Edge
+	( 
+	[string[]]$xEdgeA,
+	[string[]]$xEdgeB
+	)
+	{
+	
+	$x = @();
+
+	for( $f = 0; $f -lt $xEdgeA.Length; $f++ )
+		{ 
+		$x += String-Edge -xLeft $xEdgeA[ $f ] -xRight $xEdgeB[ $f ];
+		}
+
+	return $x;
+	
+	}
+
+
+
+
+<#
+.SYNOPSIS
+.
+
+String-Fit <xArray> [xAlign xSeparator xSize xContrast]
+
+String-Fit "1", "22", "333"
+String-Fit "1", "22", "333" 1
+
+-xAlign 
+	Alignment for elements
+		0 = Centered *default
+		1 = Left
+		2 = Right
+
+-xSeparator
+	string for element separation
+
+-xSize
+	if no size argumented
+	it will be deducted from screen size
+
+
+Return a string from an array
+with elements equally aligned
+Adjusted to a given size
+(if no size supplied assume console width)
+
+.TESTS
+Strings-Fit 1,22,333,4444,55555
+Strings-Fit 1,22,333,4444,55555 -xAlignment 1
+Strings-Fit 1,22,333,4444,55555 -xSeparator "|"
+Strings-Fit 1,22,333,4444,55555 -xAlignment 0 -xSeparator "<>"
+
+#>	
+function Strings-Fit( 
+	[String[]] $xStrings, 
+	[string]   $xSeparator = "", 
+	[int]      $xAlignment = 0,  
+	[int]      $xSize      = $host.UI.RawUI.WindowSize.Width
+	)
+
+	{
+	#***2DO replace with MACRO/INLINE ~> isNullable -variable $x 
+	# ~> help($this) && halt program
+	# ?show module and line number??
+	if ( $null -eq $xStrings ) { Help Strings-Fit; return $null; }
+
+	$xCol = ( $xSize - ( $xSeparator.length * ( $xStrings.Length - 1 ))) / $xStrings.Length;
+
+	switch( $xAlignment )
+		{
+		0 { $x = Strings-Pad-Center $xStrings $xCol; Break; }
+		1 { $x = Strings-Pad-Left   $xStrings $xCol; Break; }
+		2 { $x = Strings-Pad-Right  $xStrings $xCol; Break; }
+		}
+
+	return $x -join $xSeparator;
+	}
+
+
+
+function Strings-Pad-  { AAA-Functions }
+
+
+<#
+.SYNOPSIS
+Center/Pad all strings in an array to a defined size
+if size is not argumented 
+get the size of the biggest element in the array
+
+
+.NOTES
+Strings-Align "1", "22", "333"
+Strings-Align "1", "22", "333" 20
+
+#>	
+function Strings-Pad-Center ( [String[]]$xStrings, [int]$xSize = 0 )
+	{
+
+	# se $xSize for 0 centrar pelo maior item na lista
+	if ( $xSize -eq 0 ){ $xSize = Strings-Size-Max $xStrings }
+
+	
+	$x = @();
+	foreach( $e in $xStrings )
+		{
+		$xPad = $xSize - $e.Length
+		if ( $xPad -lt 0 ){ $xPad = 0 }
+		$xHalf = $xPad -shr 1;
+
+		$x += `
+			" " * $xHalf + `
+			$e + 
+			" " * ( $xPad - $xHalf )
+					
+		}
+
+	return $x
+	}
+
+
+
+<#
+.SYNOPSIS
+Left/Pad all strings in an array to a defined size
+if size is not argumented 
+get the size of the biggest element in the array
+
+.NOTES
+Strings-Pad-Left "1", "22", "333"
+Strings-Pad-Left "1", "22", "333" 20
+
+
+#>	
+function Strings-Pad-Left( [String[]]$xStrings, [int]$xSize = 0 )
+	{
+	
+	# se $xSize for 0 alinhar pelo maior item na lista
+	if ( $xSize -eq 0 ){ $xSize = Strings-Size-Max $xStrings }
+	
+	$x = @();
+	$xFormat = "{{0,-{0}}}" -f $xSize;
+	$x += $xStrings.foreach( { $xFormat -f $_ } )
+
+	return $x
+	}
+
+
+
+<#
+.SYNOPSIS
+Right/Pad all strings in an array to a defined size
+is size is not argumented 
+get the size of the biggest element in the array
+
+
+.NOTES
+Strings-Pad-Right "1", "22", "333"
+Strings-Pad-Right "1", "22", "333" 20
+
+
+#>	
+function Strings-Pad-Right( 
+	[String[]]$xStrings = "<Strings-Pad-Right default>", 
+	[int]$xSize = 0 
+	)
+	{
+
+	# se $xSize for 0 alinhar pelo maior item na lista
+	if ( $xSize -eq 0 ){ $xSize = Strings-Size-Max $xStrings }
+
+	$x = @();
+	$xFormat = "{{0,{0}}}" -f $xSize;
+	$x += $xStrings.foreach( { $xFormat -f $_ } )
+
+	return $x
+	}
+
+
+
+
+
+<#
+.SYNOPSIS
+Return the size in characters of a String or a Array of strings
+
+
+#>	
+function Strings-Size-Chars( [string[]] $x )
+	{
+	$xx = 0;
+	Foreach( $e in $x ) { $xx += $e.length }
+	return $xx
+	}
+
+
+
+
+<#
+.SYNOPSIS
+Return the size of the biggest string in array
+
+
+#>	
+function Strings-Size-Max( [string[]] $xStrings )
+	{
+	$x = 0; 
+	$xStrings.ForEach( { if( $_.length -gt $x ){ $x = $_.length } } )
+	return $x;
+	}
+
+
+
+<#
+.SYNOPSIS
+Return the size of the smallest string in array
+
+[maxint] if none found
+
+#>	
+function Strings-Size-Min( [string[]] $xStrings )
+	{
+	$x = [int]::MaxValue; 
+	$xStrings.ForEach( { if( $_.length -lt $x ){ $x = $_.length } } )
+	return $x;
+	}
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#
+#  |T|E|X|T|
+#
+#
+
+<#
+.SYNOPSIS
+Text routines...
+
+.NOTES
+Encode/Decode
+Base64
+zXCrypt
+
+...
+
+
+
+
+#>
+function Text- { AAA-Functions; }
+
+
+<#
+.SYNOPSIS
+
+#>
+function Text-Encode 
+	{  
+	"2DO***"
+	}
+
+
+<#
+.SYNOPSIS
+
+#>
+function Text-Decode
+	{  
+	"2DO***"
+	}
+
+
+
+<#
+.SYNOPSIS
+Convert to base64
+
+#>
+function Text-toBase64( [string] $xText )
+	{  
+	$x = [System.Text.Encoding]::ASCII.GetBytes( $xText );
+
+	}
+
+
+<#
+.SYNOPSIS
+Convert from base64
+
+#>
+function Text-fromBase64
+	{  
+	"2DO***"
+	# [System.Text.Encoding]::ASCII.GetString( $b )
+	}
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#
+#  |X|X|X|
+#
+#
+<#
+.SYNOPSIS.
+Quick fixes...
+to later re-classify...
+
+#>
+
+<#
+.SYNOPSIS.
+
+.NOTES.
+
+#>
+
+function XXX- { AAA-Functions }
+
+
+
+<#
+.SYNOPSIS.
+Detect if a variable exists (was defined)
+ATT*** pass the variable name without $ prefix
+
+.NOTES.
+it is a not existent variable
+not the same as a existent variable with the value $null
+
+#>
+function XXX-ExistVariable( $x )
+	{ 
+	$null = Get-Variable -Name $x -ErrorAction SilentlyContinue; 
+	if ($?) { return $true} else {return $false}
+	}
+
+
+<#
+.SYNOPSIS.
+Launch session in new console
+
+.NOTES.
+
+#>
+function XXX-SessionConsole( $xPC=".", $xUser="OEM"  )
+	{
+	# $xPowershell = (Get-Process -id $pid).Path;
+	
+	Start-Process `
+		-FilePath Powershell.exe `
+		-ArgumentList ( "-noexit -command Enter-PSSession -ComputerName {0} -Credential {1}" -f $xPC, $xUser );
+	
+	}
+
+
+
+<#
+.SYNOPSIS.
+Launch session in new console
+
+.NOTES.
+
+#>
+function XXX-SessionConnection( $xPC=".", $xUser="OEM"  )
+	{
+	New-PSSession -ComputerName $xPC -Credential $xUser
+	
+	# -ArgumentList ( "-noexit -command Enter-PSSession -ComputerName {0} -Credential {1}" -f $xPC, $xUser );
+	
+	}
 

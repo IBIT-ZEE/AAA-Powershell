@@ -1,3 +1,15 @@
+
+"ATT***"
+"(model) is only for reference..."
+"`n`n"
+"Not to be executed..."
+
+Start-Sleep -seconds 10
+return;
+exit;
+
+
+
 <#
 
 AAA
@@ -12,6 +24,7 @@ FLOW
 
 
 <# AAA ########################################################################>
+
 
 
 # ?load default command/functions
@@ -200,3 +213,5 @@ XXX
 # -Verbose -Debug
 # -ErrorAction -ErrorVariable -WarningAction -WarningVariable
 # -OutBuffer -OutVariable
+
+
