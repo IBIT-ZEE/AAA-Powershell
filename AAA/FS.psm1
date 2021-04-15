@@ -124,6 +124,44 @@ function File-Exist( [string]$xFile )
 	?Size
 #>
 
+
+
+
+
+<#
+.SYNOPSIS
+Get file/object from folder
+Optional recurse subfolders (-xRecurse)
+Filter controled by regex/match
+Folders excluded (use Folder-Get)
+Return array/$null of found files
+
+File-Get
+File-Get -xFolder .
+File-Get -xFolder . -xMatch *.txt
+
+#>
+function File-Get ( $xFolder = ".", $xFilter = "*.*", [switch]$xRecurse )
+	{
+
+	# splat simplifies [switch] processing
+	$x = @{ 
+		Path    = $xFolder; 
+		Filter  = $xFilter; 
+		# [switch] for get-files-only
+		File    = $true;
+		Recurse =  $xRecurse 
+		}
+	
+	return `
+		Get-ChildItem @x
+
+	}
+
+
+
+
+
 function File-Info( $xFile = "." )
 	{
 	if ( -not ( Test-Path $xFile ) ){ return $null }
@@ -149,6 +187,7 @@ function File-Info( $xFile = "." )
 
 
 
+
 <#
 .SYNOPSIS
 List files from folder
@@ -158,7 +197,7 @@ Display Title and #Count/#All
 return number of found files (0 if none)
 
 #>
-function File-List ( $xFolder = ".", $xMatch = ".*" )
+function File-List ( $xFolder = ".", $xMatch = ".*", [switch]$xRecurse )
 	{
 
 	# get all files to a List<FileInfo>
@@ -186,6 +225,7 @@ function File-List ( $xFolder = ".", $xMatch = ".*" )
 
 	return $xFiles.Length;
 	}
+
 
 
 
@@ -412,6 +452,75 @@ function Folder-ACL-Get( $xFolder )
 	}
 
 
+
+
+<#
+.SYNOPSIS
+~
+
+Get file/object from folder
+Optional recurse subfolders (-xRecurse)
+Filter controled by regex/match
+Folders excluded (use Folder-Get)
+Return array/$null of found files
+Errors drop in $AAA.Error
+
+Folder-Get
+Folder-Get -xFolder .
+Folder-Get -xFolder . -xFilter *.txt
+
+ATT***
+?limit files by ?AAA.fs.max
+?throw if errors
+
+~
+#>
+function Folder-Get ( 
+			$xFolder = ".", 
+			$xFilter = "*.*", 
+			[switch]$xRecurse,
+			[switch]$xSymlinks
+			)
+	{
+
+	# splat simplifies [switch] processing
+	$xSplat = @{ 
+		Path          = $xFolder; 
+		Filter        = $xFilter; 
+		Directory     = $true;     # [switch] for get-folders-only
+		Recurse       = $xRecurse
+		FollowSymlink = $xSymlinks  # [switch] for follow-symlinks
+		}
+	
+	# Catch errors to fill $AAA.Error ?and throw??
+	$xErrors = $null;
+
+	$xItems = `
+		Get-ChildItem `
+			@xSplat `
+			-ErrorAction SilentlyContinue `
+			-ErrorVariable xErrors
+
+	# to avoid THROW annoyance
+	# verify ( return -is $null ) -AND- ( $AAA.Error -isnot $null )
+	if ( $xErrors )
+		{
+		# throw ( "AAA/Folder-Get #errors={0} " -f $xErrors.Count )
+		$AAA.Error = $xErrors;
+		return $null;
+		}
+
+
+	# prevent break on inacessible folders
+	return $xItems
+
+	}
+
+
+
+
+
+
 function Folder-Go( [string] $x )  
 	{
 
@@ -443,7 +552,7 @@ return
 	{} for ZERO-ELEMENTS filtered
 
 #>
-function Folder-List( [string]$xPath, [switch]$xReparse )
+function Folder-List( [string]$xPath, [switch]$xRecurse, [switch]$xReparse )
 	{
 	
 	# null means path was not valid

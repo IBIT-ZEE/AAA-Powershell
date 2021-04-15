@@ -175,6 +175,32 @@ function Datagrid-New( $xTable )
 
 
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+#
+#  |H|A|S|H
+#
+
+
+
+<#
+RSA
+sha1 SHA256/32b SHA512
+...
+
+#>
+function Hash- { AAA-Functions }
+
+
+
+function Hash-sha256( [string]$x )
+	{
+	return `
+		[System.Convert]::ToHexString( 
+			[System.Security.Cryptography.SHA256]::HashData( $x.ToCharArray() )
+			)
+	}
+
+
 
 
 

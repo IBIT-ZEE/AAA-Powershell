@@ -27,6 +27,8 @@ $global:AAA = @{
 		Editor     = "C:\APL\Microsoft\Code64\Code.exe"
 		}
 	
+	Error = @();
+
 	Folders = @{
 		APL = "C:\APL";
 		DAT = "C:\DAT";
@@ -50,6 +52,7 @@ $global:AAA = @{
 
 $global:AAA.Folders += @{
 	AAA      = $AAA.Folders.DAT + "\AAA"
+	Data     = $AAA.Folders.DAT + "\AAA\Data"
 	Links    = $AAA.Folders.DAT + "\#Links"
 	LinksX   = $AAA.Folders.DAT + "\#LinksX"
 	Scripts  = $AAA.Folders.DAT + "\#Scripts"
