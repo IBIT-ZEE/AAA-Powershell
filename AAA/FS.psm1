@@ -145,16 +145,28 @@ function File-Get ( $xFolder = ".", $xFilter = "*.*", [switch]$xRecurse )
 	{
 
 	# splat simplifies [switch] processing
-	$x = @{ 
+	$xSplat = @{ 
 		Path    = $xFolder; 
 		Filter  = $xFilter; 
-		# [switch] for get-files-only
-		File    = $true;
-		Recurse =  $xRecurse 
+		File    = $true;     # [switch] for get-files-only
+		Recurse =  $xRecurse # [switch] default is no-recurse
 		}
-	
-	return `
-		Get-ChildItem @x
+
+	# Catch errors to fill $AAA.Error ?and throw??
+	# Clean AAA.Errors from previous operations
+	$xErrors = $null;
+
+	$xItems = `
+		Get-ChildItem `
+			@xSplat `
+			-ErrorAction SilentlyContinue `
+			-ErrorVariable xErrors
+
+	# to avoid THROW annoyance
+	# verify ( return -is $null ) -AND- ( $AAA.Error -isnot $null )
+	$AAA.Error = $xErrors;
+
+	return $xItems;
 
 	}
 
@@ -493,6 +505,7 @@ function Folder-Get (
 		}
 	
 	# Catch errors to fill $AAA.Error ?and throw??
+	# Clean AAA.Errors from previous operations
 	$xErrors = $null;
 
 	$xItems = `
@@ -503,15 +516,8 @@ function Folder-Get (
 
 	# to avoid THROW annoyance
 	# verify ( return -is $null ) -AND- ( $AAA.Error -isnot $null )
-	if ( $xErrors )
-		{
-		# throw ( "AAA/Folder-Get #errors={0} " -f $xErrors.Count )
-		$AAA.Error = $xErrors;
-		return $null;
-		}
+	$AAA.Error = $xErrors;
 
-
-	# prevent break on inacessible folders
 	return $xItems
 
 	}
