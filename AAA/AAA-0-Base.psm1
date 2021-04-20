@@ -363,7 +363,10 @@ function AAA-Edit( [string] $xName )
 	# Launch AAA/Editor and jump to line
 	Start-Process `
 		-FilePath $AAA.System.Editor `
-		-ArgumentList ( "--goto {0}:{1}" -f $xFunction.Module.Path, $x[0].LineNumber );
+		-ArgumentList ( "--goto {0}:{1}" -f $xFunction.Module.Path, $x[0].LineNumber ) `
+		-UseNewEnvironment
+		;
+
 
 	}
 
@@ -1147,19 +1150,20 @@ function AAA-Test-Data
 	{
 	$global:a = 1, 22, 333, 4444, 55555, 666666, 7777777;
 	$global:h = @{ one=1; two=22; three=333; four=4444; five=55555; six=666666; seven=7777777; };
-	$global:s = "A ágil raposa castanha saltou sobre o cão pachorrento...";
+	$global:s = "A ágil raposa castanha saltou sobre o pardo cão pachorrento...";
 	$global:x = 1;
 
-	String-Line;
+	Pattern-Line;
 	'$a/Array';
 	$a;
 	'';
 
-	String-Line;
+	Pattern-Line;
 	'$h/Hashtable';
 	$h;
 	'';
 
+	Pattern-Line;
 	'$s/String';
 	'';
 	

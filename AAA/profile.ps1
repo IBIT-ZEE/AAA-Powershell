@@ -109,7 +109,7 @@ has()
 exists() ?test make with get-variable???
 #>
 
-function Accelerators		{ [psobject].Assembly.GetType("System.Management.Automation.TypeAccelerators")::get }
+function accelerators		{ [psobject].Assembly.GetType("System.Management.Automation.TypeAccelerators")::get }
 function code( $x )			{ Get-Content -path function:$x }
 function debug( $x )		{ AAA-Debug -xFunction $x -xOn }
 # function err()				{ Write-Host -ForegroundColor Red $error[-1] }
@@ -124,11 +124,20 @@ function helpX( $xItem = "Show-Command" )	{ Show-Command -CommandName $xItem }
 function isEmpty( $x ) 		{ return [string]::IsNullOrEmpty( $x ) }
 function isNull( $x ) 		{ return ( $null -eq $x ) }
 function obsolete( $x )		{ if ($Host.Version.Major -ge $x) { throw "$((Get-PSCallStack)[-2].FunctionName) ~> O*B*S*O*L*E*T*E in PS#$x"  } }
+function print()			{ foreach( $x in $args ){ Write-Host -NoNewline $x }}
 function type( $x )			{ if( $x ){ $x.GetType() | Format-Table -AutoSize } else { return '$null'; }}
 function typeX( $x )		{ if( $x ){ $x.GetType() | Format-List * }; return '$null' }
 function variables( $xMatch )	{ Get-Variable -Include $xMatch }
 function version()			{ $Host.Version.Major }
 function versionX()			{ $Host.Version.Minor }
+
+# <functional paradigm MAP/FILTER/REDUCE>
+# sadly Powershell already has a keyword named "filter"... so "filtr"
+# for reduce-context assume $__ as the 'collector'
+function map( $xData, $xLambda ){ return  $xData | ForEach-Object $xLambda }
+function filtr( $xData, $xLambda ){ $xData | Where-Object $xLambda }
+function reduce( $xData, $xCode )
+	{ $__ = ( $null -as $xData[0].GetType()); foreach( $_ in $xData ){ Invoke-Command -ScriptBlock $xCode -ArgumentList $_,$__ -NoNewScope }; return $__}
 
 
 
