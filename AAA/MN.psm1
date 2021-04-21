@@ -1,82 +1,61 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 #
-# CUI Menu System
+# UI Menu System/Console
 #
 #
 #
+
+# QUIRK*** so we can use the [_AA]/METADATA type
+using module C:\dat\PowerShell\AAA\AA.psm1;
 
 <#
 .SYNOPSIS
-Present a console navigatable menu
-and return the selected Index
+~
 
+AAA/Advanced Artifact Template
+
+	About .... Objective/Usage quick overview
+	New ...... Creates a new object, put at use, return reference
+	Object ... Returns current object reference
+	Test .....	Quick test framework (assert for...)
+
+	State .... ?
+	Status ... ?
+
+	On/Off ... Activate/Deactivate object (for event processors, ...)
+
+~
 #>
-function AAA-Menu( $xOptions, $xGroups = $null )
-	{
-	$xMenu = [MN_]::New();
-	$xMenu.xOptions = $xOptions;
+function MN- { AAA-Functions }
 
-	# TEST***
-	# $xMenu.xGroupsX = $xGroups
-	$xMenu.xGroups  += 0;
-	$xMenu.xGroupsX += $null;	
-	
-	$xMenu.Go();
-	return $xMenu.xIndex;
-	}
-
-
-function ~AAA-Menu( $xOptions, $xGroups = $null )
-	{
-	$xMenu = [MN_]::New();
-	$xMenu.xOptions = $xOptions;
-
-	# GROUP-CHANGE POINTS APPROPRIATION/AWERNESS
-	if ( $xGroups ) 
-		{
-		# REALIZE GROUPS
-		# 1. get inflexion points
-		# 2. 
-		$xMenu.xGroups = Array-Changepoints $xGroups 
-		foreach( $x in $xMenu.xGroups )	{ $xMenu.xGroupsX += $xGroups[ $x ] }
-		}
-	else
-		{
-		# AUTO-GENERATE DEFAULT GROUP (All-Elements)
-		$xMenu.xGroups  += 0;
-		$xMenu.xGroupsX += $null;
-		}
-	
-	$xMenu.Go();
-	return $xMenu.xIndex;
-	}
-
-
-<#
-.SYNOPSIS
-Return a MN_ Object
-
-QUIRK*
-to fix Powershell limitation of Class-Types 
-not be available  in other modules... 
-even if other imported items are correctly available (Functions, vars, ...)
-#>
-function MN_New(){ return [MN_]::new() }
+Set-StrictMode -Version 5;
+# Add-Type -AssemblyName "System.Web"; # for Mime types
 
 
 Class MN_
 	{
+	# holds the current object
+	# for all methods
+	# and interactive functionality [WS_]::$object
+	static [MN_] $object = $null;
+	[_AA]$_AA = [_AA]::new();
+
+
+	# SPECIFIC CLASS/TYPE PROPERTIES
+
+
 	$xKey=0;						# [System.ConsoleKeyInfo.key] 
-	$xChar=0;						# [System.ConsoleKeyInfo.keyChar] 
 	$xKeyPrevious;
-	$xOptions = @();			# string[]
+	$xChar=0;						# [System.ConsoleKeyInfo.keyChar] 
 	$xCount   = 0;
 	$xIndex   = 0;
+	$xGroup   = $null;
 	$xCursor;
 	$xSeparator = "`n";
 
-	$xGroups  = @();			# int[]
-	$xGroupsX = @();			# String[]
+	$xOptions = @();		# string
+	$xGroups  = @();		# int[]
+	#$xGroupsX = @();		# String[]
 	
 	$keys   = $global:AAAX.Keys;
 	$xInk   = $global:AAAX.Colors.Ink;
@@ -86,19 +65,36 @@ Class MN_
 	$UI = $global:host.ui.RawUI;
 	$AAAX =  $global:AAAX;
 
+	# ctor expose for clean AV object return
+	# in v5 PS has no constructor chainning
+	# so no overloads here has not much advantage
+	# let's opt-in for basic constructor
+	MN_() 
+		{ 
+		# SHARED/STATIC holds the last/current object	
+		[MN_]::Object = $this;
+
+		# METADATA
+		$this._AA.xDate = Get-Date;
+		$this._AA.xCredential = $global:AAA.System.Credential;
+		
+		# constructor "default return" is the "instantiated object"
+		}
+
 
 	# DISPLAY | WAIT-FOR-KEY | ...
 	Go()
-		{
+	{
 		$this.xCount  = $this.xOptions.Length;
 		$this.xCursor = $global:Host.UI.RawUI.CursorPosition;
 
 		while ( $this.xKey -ne $this.keys.Enter ) 
 			{
-			$this.Processor();
-
+			# wait for user actions
+			# show options/groups
 			$global:host.UI.RawUI.CursorPosition = $this.xCursor;
-			$this.Show();
+			$this.Input();
+			$this.Render();	
 
 			# Input/get Key code
 			# $this.xKey = $global:host.UI.RawUI.ReadKey( "NoEcho,IncludeKeyDown" ).VirtualKeyCode;
@@ -110,74 +106,21 @@ Class MN_
 		}
 
 
-	# DISPLAY GROUPS
-	Show()
-		{
-		$xMax = $this.xGroups.Length;
-
-		# GROUPS DISPLAY
-		for( $xGroupIx = 0; $xGroupIx -lt $xMax; $xGroupIx++ )
-			{
-			#
-			if ( $this.xGroupsX[ $xGroupIx ] ) 
-				{ Write-Host $this.xGroupsX[ $xGroupIx ] }
-
-			# get group limit low-high element index
-			$xRangeLo = $this.xGroups[ $xGroupIx ];
-
-			$xRangeHi = `
-				if ( $xGroupIx -lt ($xMax-1) ) 
-					{ $this.xGroups[ $xGroupIx + 1 ] } 
-				else 
-					{ $this.xCount };
-
-			# OPTIONS/GROUPS DISPLAY
-			for( $xOptionIx = $xRangeLo; $xOptionIx -lt $xRangeHi; $xOptionIx++ )
-				{
-				$xOptionTx = $this.xOptions[ $xOptionIx ];
-
-				# prevent text from break line?
-				if ( $this.UI.CursorPosition.X + $xOptionTx.Length -gt $this.UI.WindowSize.Width )
-					{ Write-Host ""; }
-
-				# render non-selected options
-				if ( $xOptionIx -ne $this.xIndex ) 
-					{
-					Write-Host -NoNewLine $xOptionTx;
-					}
-				else 
-					{
-					# render Selected option
-					$global:host.ui.RawUI.ForegroundColor = $global:AAAX.Colors.Paper;
-					$global:host.ui.RawUI.BackgroundColor = $global:AAAX.Colors.Ink;
-					Write-Host -NoNewline $xOptionTx;
-					$global:host.ui.RawUI.ForegroundColor = $global:AAAX.Colors.Ink;
-					$global:host.ui.RawUI.BackgroundColor = $global:AAAX.Colors.Paper;									
-					}
-
-				Write-Host -NoNewLine " ";
-				}
-
-			Write-Host "`n";
-			}
-		}
-
-
 	# PROCESS USER INPUT
-	Processor()
+	Input()
 		{
 		# VACCINE using number arrays 
 		# ( no strings => no .StartsWith() )
 
 		switch( $this.xKey )
 			{
-			$this.keys.Home  { $this.xIndex = 0                }
-			$this.keys.End   { $this.xIndex = $this.xCount - 1 }
-			$this.keys.Space { $this.xIndex++  }
-			$this.keys.Right { $this.xIndex++  }
-			$this.keys.Left  { $this.xIndex--  }
-			$this.keys.Up    { $this.PreviousGroup()  } 
-			$this.keys.Down  { $this.NextGroup()      }
+			$this.keys.Home  { $this.xIndex = 0      ; break; }
+			$this.keys.End   { $this.xIndex = $this.xCount - 1; break; }
+			$this.keys.Space { $this.xIndex++        ; break; }
+			$this.keys.Right { $this.xIndex++        ; break; }
+			$this.keys.Left  { $this.xIndex--        ; break; }
+			$this.keys.Up    { $this.PreviousGroup() ; break; }
+			$this.keys.Down  { $this.NextGroup()     ; break; }
 
 			# TODO*** REFACTOR TO DEFAULT
 			#0..9/A..Z
@@ -201,34 +144,296 @@ Class MN_
 		}
 		
 	
-	# SCAN GROUP-MARKS FOR THE 1ST GRATER THAN OPTION-INDEX
+	# SCAN GROUP-MARKS FOR THE 1ST GREATER THAN OPTION-INDEX
+	# position $this.xIndex cursor
 	NextGroup()
 		{
 		# AT LEAST FIXED '<N>=LAST' GROUP IS ALWAYS HIT
 		for( $x = 0; $x -lt $this.xGroups.Length - 1; $x++ )
-			{ if( $this.xIndex -gt $this.xGroups[ $x ] ) { continue; } else { break; } }
+			{ 
+			if( $this.xIndex -gt $this.xGroups[ $x ] ) 
+				{ continue; } else { break; } 
+			}
 
-		# QUIRK: THERE IS NO LAST ELEMENT IN GROUP SECTIONS
+		# QUIRK*** THERE IS NO LAST ELEMENT IN GROUP SECTIONS
 		# IF IN LAST GROUP... NEXT WILL BE 0
 		if ( $x -eq $this.xGroups.Length - 1 ) 
-			{ $this.xIndex = 0 } else { $this.xIndex = $this.xGroups[ $x + 1 ] }
+			{ $this.xIndex = 0 } 
+		else 
+			{ $this.xIndex = $this.xGroups[ $x + 1 ] }
 		
 		}
 
 
 
 	# SCAN GROUP-MARKS FOR THE 1ST LESS THAN OPTION-INDEX
+	# position $this.xIndex cursor
 	PreviousGroup()
 		{
 		# VACCINE: ?IS AT TOP ALREADY THEN GOTO MAX
-		if ( $this.xIndex -eq 0 ) { $this.xIndex -eq $this.xCount - 1 }
+		if ( $this.xIndex -eq 0 ) 
+			{ $this.xIndex -eq $this.xCount - 1 }
 
 		# AT LEAST FIXED '0=1ST' GROUP IS ALWAYS HIT
 		for( $x = $this.xGroups.Length - 1 ; $x -gt 0; $x-- )
-			{ if( $this.xIndex -lt $this.xGroups[ $x ] ) { continue } else { break; }}
+			{ 
+			if( $this.xIndex -lt $this.xGroups[ $x ] ) 
+				{ continue } else { break; }
+			}
 		
 		$this.xIndex = $this.xGroups[ $x - 1 ]; 
+		}
+	
+	
+	Render()
+		{
+
+		for( $x = 0; $x -lt $this.xCount; $x++ )
+			{
+			[string]$xOption = $this.xOptions[ $x ];
+			[string]$xGroupX = $this.xGroups[ $x ];
+
+			# ?group changing
+			# show if Group-Title=ON...
+			# update last used group
+			if ( $xGroupX -ne $this.xGroup )
+				{
+				# prevent a NULL
+				# and prevent new-lines at first option
+				if ( $xGroupX ) 
+					{
+					# ??write group separator
+					if ( $x ) { Write-Host "`n" }
+					Write-Host ( "[{0}]" -f $xGroupX )
+					$this.xGroup = $xGroupX;
+					}
+				}
+
+
+			# break line before option text would break
+			if ( $this.UI.CursorPosition.X + $xOption.Length -gt $this.UI.WindowSize.Width )
+				{ Write-Host ""; }
+
+			# render non-selected options
+			if ( $x -ne $this.xIndex ) 
+				{
+				Write-Host -NoNewLine $xOption;
+				}
+			else 
+				{
+				# render Selected option
+				$global:host.ui.RawUI.ForegroundColor = $global:AAAX.Colors.Paper;
+				$global:host.ui.RawUI.BackgroundColor = $global:AAAX.Colors.Ink;
+				Write-Host -NoNewline $xOption;
+				$global:host.ui.RawUI.ForegroundColor = $global:AAAX.Colors.Ink;
+				$global:host.ui.RawUI.BackgroundColor = $global:AAAX.Colors.Paper;									
+				}
+
+			Write-Host -NoNewLine " ";
+			}
+
 		}
 
 	}
 
+
+
+<#
+.SYNOPSIS
+
+If defined...
+is called from AMN-Functions
+before listing available methods...
+
+
+#>
+function MN-About()
+	{
+	"
+	MN-New to get a instance ( xOptions/null xGroups/null )
+	Mn-On to render and wait for user input
+
+	...
+	"
+	}
+
+
+
+<#
+.SYNOPSIS
+Show the help page...
+
+#>
+function MN-Help( )
+	{ 
+	Get-Help -Category function -Name MN- -ShowWindow;
+	}
+
+
+
+
+<#
+.SYNOPSIS
+Create a new object of this kind...
+and make it current
+
+Return the newly created reference...
+#>
+function MN-New( $xOptions = $null, $xGroups = $null )
+	{
+	# object inception/instantiation
+	# SHARED $this::object and other METADATA/_AA (time, credential, ...)
+	# is assigned in the contructor
+	$x = [MN_]::new()
+
+	# inicialization
+	$x.xOptions = $xOptions;
+	$x.xGroups  = $xGroups;
+
+	# if OPTIONS are argumented
+	# opt-in for initializion of xGroups to $nulls if necessaire
+	# and reduce the move/render methods mechanics complexity
+	if ( $xOptions ) 
+		{
+		if ( $null -eq $xGroups )
+			{ $x.xGroups = @( $null ) * $xOptions.Length }
+		}
+
+	return $x; 
+	}
+
+
+
+<#
+.SYNOPSIS
+GET/SET the current object
+
+Return the current new MN_ object 
+[MN_]::$object
+
+#>
+function MN-Object( $xObject = $null )
+	{ 
+	
+	# Current object
+	# . Get/Retrieve
+	# -or-
+	# . Set/Assign/Activate	
+	if ( $null -eq $xObject  ) 
+		{ 
+		# no argument...
+		# so... get the Current object
+		if ( $null -eq [MN_]::object ){ "No current MN- object" }; 
+		return [MN_]::object;
+	
+		}
+	else
+		{
+		# set argumented object
+		# ?return former object
+		}
+
+	}
+
+
+
+
+<#
+.SYNOPSIS
+Start listening for requests...
+
+#>
+function MN-On( [MN_]$xObject = [MN_]::object )
+	{
+	if( $null -eq $xObject ){ throw "MN-On ~> no Object defined..." }
+
+	# reset key for on/off sessions (last enter key will cause exit/return)
+	# and relaunch menu with current state
+	$xObject.xKey = $null
+	$xObject.Go();
+
+	return $xObject.xIndex;
+	}
+
+
+<#
+.SYNOPSIS
+Stop listening for requests...
+
+#>
+function MN-Off( [MN_]$xObject = [MN_]::object )
+	{ 
+	
+
+	}
+
+
+
+<#
+.SYNOPSIS
+State display...
+
+State refers to internal data
+
+
+#>
+function MN-State( [MN_]$xObject = [MN_]::object )
+	{ 
+	
+	# 2DO***
+	# Customize the STATE output for this object
+	if ( $null -eq $xObject ){ throw "MN-State ~> no selected object..." }
+
+	$xObject;
+
+	}
+
+
+
+
+<#
+.SYNOPSIS
+Status display...
+
+Status refers to external usage
+
+* default is current object
+#>
+function MN-Status( [MN_]$xObject = [MN_]::object )
+	{ 
+	
+	# 2DO***
+	# Customize the STATUS output for this object
+	if ( $null -eq $xObject ){ throw "MN-State ~> no selected object..." }
+	$xObject;
+
+	}
+
+
+
+<#
+.SYNOPSIS
+Tests
+to provide a simple test framework
+and assert for incoherences
+
+#>
+function MN-Test( [MN_]$xObject = [MN_]::object )
+	{ 
+	'''
+	Simple test framework
+	Asserting for incohereces
+
+	Define your more critical 
+	centralize here a global call 
+	to all tests considered critical
+	applied over the current object...
+	'''
+
+	MN-New 1,22,333,4444,55555,666666,7777777 1,2,2,3,3,3,4
+	MN-On
+	
+	}
+
+
+# MN-New -xName "<aa-default>"

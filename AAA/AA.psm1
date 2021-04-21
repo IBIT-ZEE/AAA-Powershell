@@ -1,16 +1,30 @@
-# QUIRK*** so we can use the [_AA]/METADATA type 
-# QUIRK*** see final code-line if desired MODULE-INCLUDE-1ST-INITIALIZATION
-# using module C:\dat\PowerShell\AAA\AA.psm1;
-
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 #
-#  |_|_| * AAA Code/Data Interface Template
+#  |_|_| * AAA Code/Data Program/REPL Interface Template
 #
+#	1.	Copy all code below to new *.psm1 library
+#	2.	replace all "AA-" with the new Class-Name
+#	3.	Delete non-usable methods (mainly -On/-Off)
+#	4.	Extend the Class as 
+#
+
+# ATT***
+#
+# QUIRK*** so we can use the [_AA]/METADATA type 
+#
+# QUIRK*** 
+# . see final code-line 
+# . if desired OBJECT-DEFAULT-INITIALIZATION on MODULE-1ST-INCLUDE
+# . alas a default object o
+#
+# ATT*** to module nesting
+# remove comment only when in a new module
+# using module C:\dat\PowerShell\AAA\AA.psm1;
 
 
 <#
 .SYNOPSIS
->
+~
 
 AAA/Advanced Artifact Template
 
@@ -24,6 +38,7 @@ AAA/Advanced Artifact Template
 
 	On/Off ... Activate/Deactivate object (for event processors, ...)
 
+~
 #>
 function AA- { AAA-Functions }
 
@@ -62,12 +77,14 @@ class _AA
 
 
 
+# to RENAME to SPECIFIC [??_]::$object
 class AA_
 	{
-	# holds the current object
-	# for all methods
-	# and interactive functionality [WS_]::$object
+	# holds the current SPECIFIC [??_]::$object
+	# and interactive functionality 
 	static [AA_] $object = $null;
+
+	# this is for AA metadata
 	[_AA]$_AA = [_AA]::new();
 
 
@@ -83,8 +100,9 @@ class AA_
 		# SHARED/STATIC holds the last/current object	
 		[AA_]::Object = $this;
 
+		# Metadata
 		$this._AA.xDate = Get-Date;
-		$this._AA.xCredential = global:AAA.System.Credential;
+		$this._AA.xCredential = $global:AAA.System.Credential;
 		
 		# constructor "default return" is the "instantiated object"
 		}
@@ -226,8 +244,8 @@ Start listening for requests...
 #>
 function AA-On( [AA_]$xObject = [AA_]::object )
 	{
-	if( $null -eq $xObject ){  }
-	
+	if( $null -eq $xObject ){ throw "AA-On ~> no Object defined..." }
+
 
 
 	}

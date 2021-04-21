@@ -41,12 +41,16 @@ Set-StrictMode -Version 5;
 
 # Allow try/catch to work with commandlets
 $ErrorActionPreference = "Stop";
-
 $WarningPreference = "SilentlyContinue"
+
+Import-Module -Name C:\dat\PowerShell\AAA\AAA-String.psm1
+Import-Module -Name C:\dat\PowerShell\AAA\AAA-Strings.psm1
+
 Import-Module -Name C:\dat\PowerShell\AAA\AAA-0-Base.psm1
 Import-Module -Name C:\dat\PowerShell\AAA\AAA-1-System.psm1
 Import-Module -Name C:\dat\PowerShell\AAA\AAA-2-Extensions.psm1
 Import-Module -Name C:\dat\PowerShell\AAA\AAA-3-Other.psm1
+
 
 # Import-Module -Name C:\dat\PowerShell\AAA\_AA.psm1		# AA Generic Function/State prototype
 Import-Module -Name C:\dat\PowerShell\AAA\AA.psm1		# AA/Help+Reference
@@ -58,11 +62,14 @@ Import-Module -Name C:\dat\PowerShell\AAA\MN.psm1		# Menus/Console
 Import-Module -Name C:\dat\PowerShell\AAA\NW.psm1		# Network
 Import-Module -Name C:\dat\PowerShell\AAA\OS.psm1		# Operating System
 Import-Module -Name C:\dat\PowerShell\AAA\PS.psm1		# Powershell
+Import-Module -Name C:\dat\PowerShell\AAA\TS.psm1		# Text-to-Speech
 Import-Module -Name C:\dat\PowerShell\AAA\UI.psm1		# User Interfaces (CUI/GUI/WUI/...)
 Import-Module -Name C:\dat\PowerShell\AAA\VD.psm1		# Virtual Devices
 Import-Module -Name C:\dat\PowerShell\AAA\VM.psm1		# Virtual Machine
 Import-Module -Name C:\dat\PowerShell\AAA\WS.psm1		# WebServices
 Import-Module -Name C:\dat\PowerShell\AAA\WF.psm1		# WebServices
+
+
 $WarningPreference = "Continue"
 
 
@@ -92,6 +99,11 @@ function Prompt() {
 	}
 
 
+
+<# .net EXTENSIONS #>
+# in correnspondent .psm1 libraries
+# here only new or misfits...
+# ... 
 
 
 <# COMMANDS #>
@@ -135,8 +147,8 @@ function versionX()			{ $Host.Version.Minor }
 # sadly Powershell already has a keyword named "filter"... so "filtr"
 # for reduce-context assume $__ as the 'collector'
 function map( $xData, $xLambda ){ return  $xData | ForEach-Object $xLambda }
-function filtr( $xData, $xLambda ){ $xData | Where-Object $xLambda }
-function reduce( $xData, $xCode )
+function filtre( $xData, $xLambda ){ $xData | Where-Object $xLambda }
+function reduce( $xData, $xLambda )
 	{ $__ = ( $null -as $xData[0].GetType()); foreach( $_ in $xData ){ Invoke-Command -ScriptBlock $xCode -ArgumentList $_,$__ -NoNewScope }; return $__}
 
 
@@ -153,6 +165,7 @@ function path( [string]$x )	{ where.exe $x }
 function reload( )			{ PS-Reload }
 function services( $x )		{ Services-Names $x }
 function wait( $x = 1 )		{ Start-Sleep -seconds $x }
+
 
 
 <# COMMANDS WITH DEFAULT PARAMETER #>

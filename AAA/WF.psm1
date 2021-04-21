@@ -1,15 +1,14 @@
-# QUIRK*** so we can use the [_AA]/METADATA type
-using module C:\dat\PowerShell\AAA\AA.psm1;
-
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 #
 #  |W|F| * Windows Forms
 #
 
+# QUIRK*** so we can use the [_AA]/METADATA type
+using module C:\dat\PowerShell\AAA\AA.psm1;
 
 <#
 .SYNOPSIS
->
+~
 
 AAA/Advanced Artifact Template
 
@@ -23,6 +22,7 @@ AAA/Advanced Artifact Template
 
 	On/Off ... Activate/Deactivate object (for event processors, ...)
 
+~
 #>
 function WF- { AAA-Functions }
 
