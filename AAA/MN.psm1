@@ -93,10 +93,11 @@ Class MN_
 			# wait for user actions
 			# show options/groups
 			$global:host.UI.RawUI.CursorPosition = $this.xCursor;
-			$this.Input();
+			$this.Move();
 			$this.Render();	
 
-			# Input/get Key code
+			# INPUT
+			# get Key code
 			# $this.xKey = $global:host.UI.RawUI.ReadKey( "NoEcho,IncludeKeyDown" ).VirtualKeyCode;
 			$x = [Console]::ReadKey();
 			$this.xKey = [int]$x.Key;
@@ -107,20 +108,20 @@ Class MN_
 
 
 	# PROCESS USER INPUT
-	Input()
+	Move()
 		{
 		# VACCINE using number arrays 
 		# ( no strings => no .StartsWith() )
 
 		switch( $this.xKey )
 			{
-			$this.keys.Home  { $this.xIndex = 0      ; break; }
+			$this.keys.Home  { $this.xIndex = 0 ; break; }
 			$this.keys.End   { $this.xIndex = $this.xCount - 1; break; }
-			$this.keys.Space { $this.xIndex++        ; break; }
-			$this.keys.Right { $this.xIndex++        ; break; }
-			$this.keys.Left  { $this.xIndex--        ; break; }
-			$this.keys.Up    { $this.PreviousGroup() ; break; }
-			$this.keys.Down  { $this.NextGroup()     ; break; }
+			$this.keys.Space { $this.xIndex++   ; break; }
+			$this.keys.Right { $this.xIndex++   ; break; }
+			$this.keys.Left  { $this.xIndex--   ; break; }
+			$this.keys.Up    { $this.GroupUp()  ; break; }
+			$this.keys.Down  { $this.GroupDn()  ; break; }
 
 			# TODO*** REFACTOR TO DEFAULT
 			#0..9/A..Z
@@ -132,83 +133,101 @@ Class MN_
 					{
 					# VACCINE $xIndex from GETTING NON VALID ordinals
 					$this.xIndex++;
-					$x = Array-ScanNext $this.xOptions "$($this.xChar)*" $this.xIndex;
+
+					$x = `
+						Array-ScanNext `
+							-xArray $this.xOptions `
+							-xElement $this.xChar + '*' `
+							-xPos $this.xIndex;
+
 					if ( $x -ne -1 ) { $this.xIndex = $x }
 					}
 			 	}
 			}
 
-			if ( $this.xIndex -lt 0               ) { $this.xIndex = $this.xCount - 1 }			
-			if ( $this.xIndex -gt $this.xCount -1 ) { $this.xIndex = 0                }
+		# wrap menu
+		if ( $this.xIndex -lt 0               ) { $this.xIndex = $this.xCount - 1 }			
+		if ( $this.xIndex -gt $this.xCount -1 ) { $this.xIndex = 0                }
+
+		# update current group for current index
+		# $this.xGroup = $this.xGroups[ $this.xIndex ];
 
 		}
 		
-	
-	# SCAN GROUP-MARKS FOR THE 1ST GREATER THAN OPTION-INDEX
+
+	# SCAN GROUP-TAGS FOR THE 1ST GREATER THAN OPTION-INDEX
 	# position $this.xIndex cursor
-	NextGroup()
+	GroupUp()
 		{
-		# AT LEAST FIXED '<N>=LAST' GROUP IS ALWAYS HIT
-		for( $x = 0; $x -lt $this.xGroups.Length - 1; $x++ )
-			{ 
-			if( $this.xIndex -gt $this.xGroups[ $x ] ) 
-				{ continue; } else { break; } 
+		# cycle-backwards through all elements begining at current index
+		# if group-tag change then break and assign index
+		for( $x = 1; $x -lt $this.xCount - 1; $x++ )
+			{
+			if( $this.xGroups[ (  $this.xIndex + ( $this.xCount - $x ) ) % $this.xCount ] -ne $this.xGroup )
+				{ 
+				$this.xIndex = (  $this.xIndex + ( $this.xCount - $x ) ) % $this.xCount;
+				$this.xGroup = $this.xGroups[ $this.xIndex ]			
+				break; 
+				} 
 			}
 
-		# QUIRK*** THERE IS NO LAST ELEMENT IN GROUP SECTIONS
-		# IF IN LAST GROUP... NEXT WILL BE 0
-		if ( $x -eq $this.xGroups.Length - 1 ) 
-			{ $this.xIndex = 0 } 
-		else 
-			{ $this.xIndex = $this.xGroups[ $x + 1 ] }
 		
 		}
 
 
 
-	# SCAN GROUP-MARKS FOR THE 1ST LESS THAN OPTION-INDEX
+	# SCAN GROUP-TAGS FOR THE 1ST LESS THAN OPTION-INDEX
 	# position $this.xIndex cursor
-	PreviousGroup()
+	GroupDn()
 		{
-		# VACCINE: ?IS AT TOP ALREADY THEN GOTO MAX
-		if ( $this.xIndex -eq 0 ) 
-			{ $this.xIndex -eq $this.xCount - 1 }
-
-		# AT LEAST FIXED '0=1ST' GROUP IS ALWAYS HIT
-		for( $x = $this.xGroups.Length - 1 ; $x -gt 0; $x-- )
-			{ 
-			if( $this.xIndex -lt $this.xGroups[ $x ] ) 
-				{ continue } else { break; }
+		# cycle-forwards through all elements begining at current index
+		# if group-tag change then break and assign index
+		for( $x = 1; $x -lt $this.xCount - 1; $x++ )
+			{
+			if( $this.xGroups[ (  $this.xIndex + $x ) % $this.xCount ] -ne $this.xGroup )
+				{ 
+				$this.xIndex = (  $this.xIndex + $x ) % $this.xCount;
+				$this.xGroup = $this.xGroups[ $this.xIndex ]			
+				break; 
+				} 
 			}
-		
-		$this.xIndex = $this.xGroups[ $x - 1 ]; 
 		}
+
 	
 	
+	# RENDER GROUPS+MENU
 	Render()
 		{
 
+		# Control group change/draw
+		$xGroupNow = $null;
+		$xGroupOld = $null;
+
 		for( $x = 0; $x -lt $this.xCount; $x++ )
 			{
-			[string]$xOption = $this.xOptions[ $x ];
-			[string]$xGroupX = $this.xGroups[ $x ];
 
-			# ?group changing
-			# show if Group-Title=ON...
-			# update last used group
-			if ( $xGroupX -ne $this.xGroup )
+			# RENDER GROUPS
+			$xGroupNow = $this.xGroups[ $x ];
+
+			# show only -on- 1st grouyp item -and- if Group-Title=ON...
+			if ( $xGroupNow -ne $xGroupOld )
 				{
 				# prevent a NULL
 				# and prevent new-lines at first option
-				if ( $xGroupX ) 
+				if ( $xGroupNow ) 
 					{
 					# ??write group separator
 					if ( $x ) { Write-Host "`n" }
-					Write-Host ( "[{0}]" -f $xGroupX )
-					$this.xGroup = $xGroupX;
+					Write-Host ( "[{0}]" -f $xGroupNow )
 					}
 				}
+			
+			# hold current value for next compare
+			$xGroupOld = $xGroupNow;
 
+
+			# RENDER OPTIONS
+			[string]$xOption = $this.xOptions[ $x ];
 
 			# break line before option text would break
 			if ( $this.UI.CursorPosition.X + $xOption.Length -gt $this.UI.WindowSize.Width )
@@ -256,6 +275,27 @@ function MN-About()
 	...
 	"
 	}
+
+
+
+
+<#
+.SYNOPSIS
+Roll the drums!!!
+
+#>
+function MN-Go( [MN_]$xObject = [MN_]::object )
+	{
+	if( $null -eq $xObject ){ throw "MN-On ~> no Object defined..." }
+
+	# reset key for on/off sessions (last enter key will cause exit/return)
+	# and relaunch menu with current state
+	$xObject.xKey = $null
+	$xObject.Go();
+
+	return $xObject.xIndex;
+	}
+
 
 
 
@@ -347,12 +387,8 @@ function MN-On( [MN_]$xObject = [MN_]::object )
 	{
 	if( $null -eq $xObject ){ throw "MN-On ~> no Object defined..." }
 
-	# reset key for on/off sessions (last enter key will cause exit/return)
-	# and relaunch menu with current state
-	$xObject.xKey = $null
-	$xObject.Go();
-
-	return $xObject.xIndex;
+	# 2DO*** redundant...
+	return Mn-Go $xObject;
 	}
 
 
@@ -430,7 +466,7 @@ function MN-Test( [MN_]$xObject = [MN_]::object )
 	applied over the current object...
 	'''
 
-	MN-New 1,22,333,4444,55555,666666,7777777 1,2,2,3,3,3,4
+	MN-New 1,22,333,4444,55555,666666,7777777 A,BB,BB,CCC,CCC,CCC,DDDD
 	MN-On
 	
 	}

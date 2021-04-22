@@ -794,6 +794,19 @@ function AAA-Logo
 
 
 
+<# 
+.SYNOPSIS
+Message 
+
+#>
+function AAA-Menu( $xOptions = $null, $xGroups = $null ) 
+	{
+	$x = ( MN-New -xOptions $xOptions -xGroups $xGroups );
+	return (Mn-Go $x);
+
+	}
+
+
 
 <# 
 .SYNOPSIS
