@@ -328,7 +328,7 @@ String-Replicate is invoked...
 function Pattern-Line( $xString = "_" ) 
 	{ 
 	[int]$xTimes = $Host.UI.RawUI.WindowSize.Width / $xString.Length
-	return String-Replicate $xString $xTimes;
+	return String-Fit $xString $xTimes;
 	}
 
 

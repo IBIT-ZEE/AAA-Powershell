@@ -43,8 +43,12 @@ Set-StrictMode -Version 5;
 $ErrorActionPreference = "Stop";
 $WarningPreference = "SilentlyContinue"
 
+# IMPORT/PRIORITY=0/CORE
 Import-Module -Name C:\dat\PowerShell\AAA\AAA-String.psm1
 Import-Module -Name C:\dat\PowerShell\AAA\AAA-Strings.psm1
+
+# IMPORT/PRIORITY=1/SYSTEM
+Import-Module -Name C:\dat\PowerShell\AAA\AAA-Array.psm1
 
 Import-Module -Name C:\dat\PowerShell\AAA\AAA-0-Base.psm1
 Import-Module -Name C:\dat\PowerShell\AAA\AAA-1-System.psm1
@@ -146,10 +150,13 @@ function versionX()			{ $Host.Version.Minor }
 # <functional paradigm MAP/FILTER/REDUCE>
 # sadly Powershell already has a keyword named "filter"... so "filtr"
 # for reduce-context assume $__ as the 'collector'
+# ZEE/ForX iterator
+function each( $xData, $xLambda ){ $xData.foreach( $xLambda ) }
 function map( $xData, $xLambda ){ return  $xData | ForEach-Object $xLambda }
 function filtre( $xData, $xLambda ){ $xData | Where-Object $xLambda }
-function reduce( $xData, $xLambda )
-	{ $__ = ( $null -as $xData[0].GetType()); foreach( $_ in $xData ){ Invoke-Command -ScriptBlock $xCode -ArgumentList $_,$__ -NoNewScope }; return $__}
+function index( $xData, $xLambda ){ for( $_=0; $_ -lt $x.Length; $_++ ){ Invoke-Command $xLambda -NoNewScope }} 
+function reduce( $xData, $xLambda ) { $__ = ( $null -as $xData[0].GetType()); foreach( $_ in $xData ) { Invoke-Command -ScriptBlock $xLambda -ArgumentList $_,$__ -NoNewScope }; return $__ } 
+
 
 
 

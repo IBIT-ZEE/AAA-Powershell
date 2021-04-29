@@ -5,15 +5,20 @@
 #
 
 
-# String.Head( n )
+# STRING.HEAD( N )
 Update-TypeData `
 	-TypeName System.String -MemberType ScriptMethod -MemberName Head `
 	-Value { param( [int]$xSize=1 ) if ( $this.Length -lt $xSize ){ return $this }; return $this.Substring(0, $xSize) }
 
-# String.Tail( n )
+# STRING.TAIL( N )
 Update-TypeData `
 	-TypeName System.String -MemberType ScriptMethod -MemberName Tail `
 	-Value { param( [int]$xSize=1 ) if ( $this.Length -lt $xSize ){ return $xString }; return $this.Substring( $this.Length - $xSize ) }
+
+# STRING.REPLICATE( N )
+Update-TypeData `
+	-TypeName System.String -MemberType ScriptMethod -MemberName Replicate `
+	-Value { param( [int]$xTimes=2 ); return $this * $xTimes; }
 
 
 
@@ -70,6 +75,24 @@ function String-Center(
 	)
 	{
 	return ( String-Pad-Center -xString $xString -xFill $xFill -xSize $xSize);
+	}
+
+
+
+<#
+.SYNOPSIS
+~
+
+Get a chunk of the string...
+begin at n and with m size
+
+>slice
+
+~
+#>
+function String-Cut( [string] $xString, [int] $xSize ) 
+	{
+	"2DO***"
 	}
 
 
@@ -158,6 +181,8 @@ function String-Decrypt( [string] $xString )
 
 <#
 .SYNOPSIS
+~
+
 Returns a sized string 
 composed by 2 other strings on the edges
 if no size is supplied console width is assumed
@@ -172,6 +197,7 @@ TEST:
 SEE:
 	String-Center
 
+~
 #>
 function String-Edge( [string]$xLeft, [string]$xRight, $xSize )
 	{
@@ -206,7 +232,32 @@ function String-Edge( [string]$xLeft, [string]$xRight, $xSize )
 	}
 
 
+<#
+.SYNOPSIS
+~
 
+Returns a string fitted to size
+if argument is not enough it replicates until 'necessaire'
+if argument if more then enough cuts to size
+
+// SAMPLE
+	String-Fit "-=-" 80
+	String-Fit -xString "-=-" -xSize 80
+
+>String-Center
+>String-Pad
+
+~
+#>
+function String-Fit( [string]$xString, [int]$xSize = $host.ui.RawUI.WindowSize.Width )
+	{
+	# is string enough...
+	if ( $xString.Length -ge $xSize ){ return $xString.Head( $xSize )	}
+	# ...or has to be replicated???
+	# then cut to the desired size...
+	# AAA***/What a nice Fluency/Chain construct
+	return $xString.Replicate( [int]( $xSize / $xString.Length ) + 1 ).Head( $xSize )
+	}
 
 
 
@@ -367,27 +418,15 @@ function String-Pattern { AAA-Alert "Use Pattern-*" }
 
 <#
 .SYNOPSIS
-REFACTOR*** 
-?force excess lenght and cut?? 
-for composed strings
---------------------------------------------------------------------------------
 
-.NOTES
+Replicate/Cut to argumented leght
 
+>String.Replicate
+
+~
 #>
-function String-Replicate `
-	(
-	[string] $xString, 
-	[int] $xSize = $Host.UI.RawUI.WindowSize.Width 
-	)
-	{
-	#if ( $null -eq $xSize ){ $xSize = $Host.UI.RawUI.WindowSize.Width }
-	$xTimes = [int]( $xSize / $xString.Length );
-	return $xString * $xTimes;
-	}
-
-
-
+function String-Replicate ( [string] $xString, [int] $xTimes = 2 )
+	{ return $xString.Replicate( $xTimes ) }
 
 
 <#
@@ -405,6 +444,9 @@ String-Slice
 String-Slice "123456798" 5
 String-Slice -xString "123456789" -xStart 0 -xLength 1
 
+>String.Head/Tail
++
+>String-Chunk
 >String-Head
 >String-Tail
 
@@ -423,8 +465,9 @@ function String-Slice( [string]$xString, [int]$xStart = 0, [int]$xLength=1 )
 .SYNOPSIS
 ~
 
-Split a string ?by char/string/interval ???
+Split on a mark ?by char/string/interval ???
 !THERE SHOULD BE OVERLOADS IN POWERSHELL!!
+?OR CAN WE SOLVE IT WITH EXTENSION METHODS??
 
 ATT***
 Non breaking error if insufficient elements

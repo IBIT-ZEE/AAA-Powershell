@@ -427,7 +427,7 @@ function AV-Status()
 
 	# or not???
 	$x = "";
-	$x += ( String-Replicate "/*\" );
+	$x += ( String-Fit "/*\" );
 	$x += "`n`n";
 	$x += String-Center ( "AV-Object not initialized..." ); 
 	$x += "`n`n";
@@ -435,7 +435,7 @@ function AV-Status()
 	$x += String-Center ( "then check the object with AV-State..." );
 	$x += String-Center ( "use AV-Path, AV-Host, AV-Credentials to configure..." ); 
 	$x += "`n`n";
-	$x += ( String-Replicate "\*/" );
+	$x += ( String-Fit "\*/" );
 
 	Write-Host ( $x );
 

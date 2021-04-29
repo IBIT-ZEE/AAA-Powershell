@@ -190,50 +190,42 @@ function HTTP- { AAA-Functions }
 
 
 
+
 <#
 .SYNOPSIS
-return the IP of URL if live...
-argument any URL
+~
 
+Demo .net use...
 
-.NOTES
-2do... handle when domain is a IP
-
-uses HTTP-Head to verify the site is live
-(shared IP sites turn-around, ...)
-
+~
 #>
-function HTTP-Ping( $xURL ) 
+function HTTP-Demo( $xURL ) 
 	{
+	if ( $null -eq $xURL ){ throw "AAA/HTTP-Demo ~> need  a URL/URI..." }
+
+	$x = `
+		[System.Net.WebRequest]::Create( $xURL);
+		$x = $request.GetResponse()
+		$x.StatusCode
+		$x.Close()
 	
-	# get the domain
-	$xURI = URI-Break $xURL
-
-	# if we get a header the site is active	
-	# HTTP-Head catches errors
-	$x = HTTP-Head -xURL ( $xURI.Domain )
-	if ( !$x ) { return $null };
-
-
-	$x = DNS-Address -xName $xURI.Domain;
-	if ( !$x ) { return $null };
-	
-	# then get the IP Adress of the domain
-	return $x.AddressList[0].IPAddressToString
+	return $x;
 	}
 
 
 
-
 <#
 .SYNOPSIS
+~
+
 Get Head data of the URL
 
-.NOTES
-
+~
 #>
 function HTTP-Head( $xURL ) 
 	{
+	if ( $null -eq $xURL ){ throw "AAA/HTTP-Head ~> need  a URL/URI..." }
+
 	try 
 		{
 		$x = `
@@ -251,22 +243,40 @@ function HTTP-Head( $xURL )
 	
 	}
 
+
+
 <#
 .SYNOPSIS
-Demo .net use...
+return the IP of URL if live...
+argument any URL
+
 
 .NOTES
+2do... handle when domain is a IP
+
+uses HTTP-Head to verify the site is live
+(shared IP sites turn-around, ...)
 
 #>
-function HTTP-Demo( $xURL ) 
+function HTTP-Ping( $xURL ) 
 	{
-	$x = `
-		[System.Net.WebRequest]::Create( $xURL);
-		$x = $request.GetResponse()
-		$x.StatusCode
-		$x.Close()
 	
-	return $x;
+	if ( $null -eq $xURL ){ throw "AAA/HTTP-Ping ~> need  a URL/URI..." }
+
+	# get the domain
+	$xURI = URI-Break $xURL
+
+	# if we get a header the site is active	
+	# HTTP-Head catches errors
+	$x = HTTP-Head -xURL ( $xURI.Domain )
+	if ( !$x ) { return $null };
+
+
+	$x = DNS-Address -xName $xURI.Domain;
+	if ( !$x ) { return $null };
+	
+	# then get the IP Adress of the domain
+	return $x.AddressList[0].IPAddressToString
 	}
 
 
@@ -327,13 +337,19 @@ function IP-Ping( $xDomain )
 	try
 		{
 		$x = Test-Connection -ComputerName $xDomain -Count 1 # -ErrorAction Ignore;
+		# $xP1 = $Global:WarningPreference
+		# $xP2 = $Global:ProgressPreference
+		# $x = Test-NetConnection -ComputerName $xDomain
+		# $Global:WarningPreference  = $xP1
+		# $Global:ProgressPreference = $xP2		
 		}
 	catch 
 		{
 		return $null;
 		}
 	
-	return $x.ProtocolAddress;
+	return $x.Address.IPAddressToString
+	# return $x.RemoteAddress.IPAddressToString;
 	}
 
 
