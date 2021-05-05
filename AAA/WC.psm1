@@ -1,11 +1,6 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 #
-#  |_|_| * AAA Code/Data Program/REPL Interface Template
-#
-#	1.	Copy all code below to new *.psm1 library
-#	2.	replace all "AA-" with the new Class-Name
-#	3.	Delete non-usable methods (mainly -On/-Off)
-#	4.	Extend the Class as 
+#  |_|_| * AAA/WC Windows Components
 #
 
 
@@ -52,10 +47,6 @@ AAA/Advanced Artifact Template
 	+
 	Get/Set ...... use if controlling a sub-object (like a VM)
 	Start/Stop ... if needs aditional control other then On/Off
-	Load/Save .... Store/Retrieve state/data/...
-	Read/Write ...
-	Peek/Poke ....
-	In/Out .......
 	+
 	Create ... use for sub-object... New is for <this> objects
 	Select ...
@@ -66,7 +57,7 @@ AAA/Advanced Artifact Template
 
 ~
 #>
-function AA- { AAA-Functions }
+function WC- { AAA-Functions }
 
 
 
@@ -87,7 +78,7 @@ class _AA
 	{
 
 	# Name will be set by DB-New if necessaire
-	# or passed to the "_AA-Owner-Object" constructor and set there
+	# or passed to the "_WC-Owner-Object" constructor and set there
 	[string] $xName;
 	[datetime] $xDate = (Get-Date)
 	[pscredential] $xCredential = $AAA.System.Credential;
@@ -101,11 +92,11 @@ class _AA
 
 
 # to RENAME to SPECIFIC [??_]::$object
-class AA_
+class WC_
 	{
 	# holds the current SPECIFIC [??_]::$object
 	# and interactive functionality 
-	static [AA_] $object = $null;
+	static [WC_] $object = $null;
 
 	# this is for AA metadata
 	[_AA]$_AA = [_AA]::new();
@@ -118,10 +109,10 @@ class AA_
 	# in v5 PS has no constructor chainning
 	# so no overloads here has not much advantage
 	# let's opt-in for basic constructor
-	AA_() 
+	WC_() 
 		{ 
 		# SHARED/STATIC holds the last/current object	
-		[AA_]::Object = $this;
+		[WC_]::Object = $this;
 
 		# Metadata
 		$this._AA.xDate = Get-Date;
@@ -172,12 +163,12 @@ class AA_
 ~
 
 If defined...
-is called from AAA-Functions
+is called from AWC-Functions
 before listing available methods...
 
 ~
 #>
-function AA-About()
+function WC-About()
 	{
 	"
 	AA -> Advanced Artifact
@@ -199,9 +190,9 @@ Show the help page...
 
 ~
 #>
-function AA-Help( )
+function WC-Help( )
 	{ 
-	Get-Help -Category function -Name AA- -ShowWindow;
+	Get-Help -Category function -Name WC- -ShowWindow;
 	}
 
 
@@ -220,12 +211,12 @@ Return the newly created reference...
 
 ~
 #>
-function AA-New()
+function WC-New()
 	{
 	# object inception/instantiation
 	# SHARED $this::object and other METADATA/_AA (time, credential, ...)
 	# is assigned in the contructor
-	$x = [AA_]::new()
+	$x = [WC_]::new()
 
 	# ...+OBJECT INITIATION
 
@@ -241,20 +232,20 @@ function AA-New()
 
 GET/SET the current object
 
-Return the current new AA_ object 
-[AA_]::$object
+Return the current new WC_ object 
+[WC_]::$object
 
 ~
 #>
-function AA-Object( $xObject = $null )
+function WC-Object( $xObject = $null )
 	{ 
 	
 	if ( $null -eq $xObject  ) 
 		{ 
 		# no argument...
 		# so... get the Current object
-		if ( $null -eq [AA_]::object ){ "No current AA- object" }; 
-		return [AA_]::object;
+		if ( $null -eq [WC_]::object ){ "No current WC- object" }; 
+		return [WC_]::object;
 	
 		}
 	else
@@ -278,9 +269,9 @@ Activate the object...
 
 ~
 #>
-function AA-On( [AA_]$xObject = [AA_]::object )
+function WC-On( [WC_]$xObject = [WC_]::object )
 	{
-	if( $null -eq $xObject ){ throw "AA-On ~> no Object defined..." }
+	if( $null -eq $xObject ){ throw "WC-On ~> no Object defined..." }
 
 
 
@@ -295,7 +286,7 @@ Deactivate the object...
 
 ~
 #>
-function AA-Off( [AA_]$xObject = [AA_]::object )
+function WC-Off( [WC_]$xObject = [WC_]::object )
 	{ 
 	
 
@@ -313,12 +304,12 @@ State refers to internal data
 
 ~
 #>
-function AA-State( [AA_]$xObject = [AA_]::object )
+function WC-State( [WC_]$xObject = [WC_]::object )
 	{ 
 	
 	# 2DO***
 	# Customize the STATE output for this object
-	if ( $null -eq $xObject ){ throw "AA-State ~> no selected object..." }
+	if ( $null -eq $xObject ){ throw "WC-State ~> no selected object..." }
 	$xObject;
 
 	}
@@ -338,12 +329,12 @@ Status refers to usage/relations with other objects
 
 ~
 #>
-function AA-Status( [AA_]$xObject = [AA_]::object )
+function WC-Status( [WC_]$xObject = [WC_]::object )
 	{ 
 	
 	# 2DO***
 	# Customize the STATUS output for this object
-	if ( $null -eq $xObject ){ throw "AA-State ~> no selected object..." }
+	if ( $null -eq $xObject ){ throw "WC-State ~> no selected object..." }
 	$xObject;
 
 	}
@@ -360,7 +351,7 @@ and assert for incoherences
 
 ~
 #>
-function AA-Test( [AA_]$xObject = [AA_]::object )
+function WC-Test( [WC_]$xObject = [WC_]::object )
 	{ 
 	'''
 	Simple test framework
@@ -375,4 +366,4 @@ function AA-Test( [AA_]$xObject = [AA_]::object )
 	}
 
 
-# AA-New -xName "<aa-default>"
+# WC-New -xName "<aa-default>"

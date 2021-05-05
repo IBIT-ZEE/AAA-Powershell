@@ -433,43 +433,6 @@ function Pattern-Stair( $xString = "*", $xLines = 3, $xWidth )
 
 
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-#
-#  |V|M| * Hyper-V
-#
-
-function VM- { AAA-List }
-	
-<#
-Will return a VM object to hold state (currying)
-and still use the VM-* functions
-#>
-function VM-New { return [VM]::new();  }
-
-class VM 
-	{ 
-	[string]$xHost     = ".";
-	[string]$xUser     = "";
-	[string]$xPassword = "";
-
-	# Startup the VM
-	On() {}
-
-	# Shutdown the VM
-	Off() {}
-
-	# Connect the console
-	Show(){}
-
-	# Disconnect the console
-	Hide(){}
-
-
-	}
-
-
-
-
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 #

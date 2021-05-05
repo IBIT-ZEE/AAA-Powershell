@@ -603,89 +603,90 @@ about_DscLogResource
 function AAA-Help( $xItem )
 	{
 	
-	$x = 
-		"about_", 
+$x = 
+'
+about_
 
-		".TYPES", 
-		"Types.ps1xml",
-		"Type_Accelerators",
-		"Type_Operators",
-		"Variables",
-		"Variable_Provider",
-		"Scopes",
-		"Using",
+.TYPES
+	Types.ps1xml
+	Type_Accelerators
+	Type_Operators
+	Variables
+	Variable_Provider
+	Scopes
+	Using
 
-		".TEXT",
-		"Wildcards",
-		"Split",		
+.TEXT
+	Wildcards
+	Split
 
-		".OPERATORS",
-		"Operators",
-		"Operator_Precedence",
-		"Arithmetic_Operators",
-		"Assignment_Operators",
-		"Comparison_Operators",
-		"Logical_Operators",
+.OPERATORS
+	Operators
+	Operator_Precedence
+	Arithmetic_Operators
+	Assignment_Operators
+	Comparison_Operators
+	Logical_Operators
 
-		".COLLECTIONS",
-		"Arrays",
-		"Automatic_Variables",         
+.COLLECTIONS
+	Arrays
+	Automatic_Variables
 
-		".FLOW",
-		"Do",
-		"for",
-		"foreach",
-		"While",
-		"Switch",
-		"Break",
-		"Continue",
-		"Throw",		
-		"Trap",
-		"Try_Catch_Finally",
+.FLOW
+	Do
+	for
+	foreach
+	While
+	Switch
+	Break
+	Continue
+	Throw
+	Trap
+	Try_Catch_Finally
 
-		".OOP",
-		"Classes",
-		"Methods",
-		"Objects",
-		"Object_Creation",
+.OOP",
+	Classes
+	Methods
+	Objects
+	Object_Creation
 
-		".LANGUAGE",
-		"Command_Precedence",
-		"Command_Syntax", 
-		"Comment_Based_Help",
-		"CommonParameters",
-		"Core_Commands",
-		"Data_Sections",
-		"Debuggers",
-		"Locations",
-		"Logging",
-		"Modules",
-		"Mocking",
-		"Numeric_Literals",
-		"PackageManagement",
-		"Pester",
-		"Scripts",
-		"Script_Blocks",
-		"Script_Internationalization",
-		"Special_Characters",
-		"Splatting",
-		"Transactions",
-		
-		".OS",
-		"CimSession",
-		"WMI",
-		"WMI_Cmdlets",
-		"WS-Management_Cmdlets",
-		"WSMan_Provider",
+.LANGUAGE
+	Command_Precedence
+	Command_Syntax
+	Comment_Based_Help
+	CommonParameters
+	Core_Commands
+	Data_Sections
+	Debuggers
+	Locations
+	Logging
+	Modules
+	Mocking
+	Numeric_Literals
+	PackageManagement
+	Pester
+	Scripts
+	Script_Blocks
+	Script_Internationalization
+	Special_Characters
+	Splatting
+	Transactions
 
-		".JOBS",
-		"Scheduled_Jobs",
-		"Scheduled_Jobs_Basic",
-		"Scheduled_Jobs_Advanced",
+.OS
+	CimSession
+	WMI
+	WMI_Cmdlets
+	WS-Management_Cmdlets
+	WSMan_Provider
 
-		".XXX"
-	
-		;
+.JOBS
+	Scheduled_Jobs
+	Scheduled_Jobs_Basic
+	Scheduled_Jobs_Advanced
+
+.XXX
+'
+;
 	
 	""
 
@@ -1495,130 +1496,6 @@ function Math-Ordinalex( [string]$x )
 
 
 
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#
-#  |O|B|J|E|C|T|
-#
-
-
-<#
-Sibblings list...
-#>
-function Object- { AAA-Functions }
-
-
-<#
-Compare object properties
-Show the differences
-#>
-function Object-Compare ( [PSObject] $xBase, [PSObject] $xComp )
-	{
-	
-	# get all base-object + compare-object property names
-	# and drop repeats (select unique)
-	$xBaseProps = @();
-	$xBaseProps += (Get-Member -InputObject $xBase -MemberType Property, NoteProperty).name
-	$xBaseProps += (Get-Member -InputObject $xComp -MemberType Property, NoteProperty).name
-
-
-
-	}
-
-
-<#
-.SyNOPSIS
-~
-
-...
-
-~
-#>
-function Object-isNull( $xObject ) { $null -eq $xObject }
-
-
-<#
-.SyNOPSIS
-~
-
-Array of object properties names
-
-~
-#>
-function Object-Properties( $xObject ) 
-	{ return (  $xObject | Get-Member -Type NoteProperty ).name }
-
-
-<#
-.SYNOPSIS
-Nullternative -or- Alternative to Null...
-
-Accept 
-. a single string
-. a Array of trings
-
-#>
-function Object-Nullternative( $xTest, $xAlternative ) 
-	{ 
-	if ( $null -eq $xTest ) { $xTest = $xAlternative } 
-	}
-
-
-
-<#
-.SYNOPSIS
-Rewritten for PS5 using iif(x,a,b) instead of PS7/x?a:b
-
-Reports the object content
-
-#>
-function Object-View( $xObject ) 
-	{ 
-
-	# DONT TEST NULLs
-	if ( $null -eq $xObject ) { AAA-Alert "<NULL>"; return; } 
-
-	$xObject.psobject.Properties `
-		| Sort-Object membertype `
-		| ForEach-Object `
-			{ `
-			[pscustomobject]@{ `
-				Member = $_.name; `
-				Type = $_.membertype; `
-				W = iif issettable "Y" ""; `
-				I = iif isInstance "Y" "N"; `
-				Value = $_.value } `
-			} `
-		| Format-Table -AutoSize
-
-	<# 
-	1. Detect if NULL ~> Exit
-	2. Detect if Collection ~> ?recurse
-	3. Get $x.PSObject 
-	4. Hashtable make from substanced properties
-	5. Hashtable make from null properties
-	6. Sort
-	7. Alphabetize [0, A-Z, _]
-	8. Show in grid
-
-	$xData = [ordered] @{};
-	$xNull = [ordered] @{};
-
-	$xObject.PSObject.Properties | `
-		ForEach-Object `
-			{ 
-			# if ( $_.value ) { $xData[ $_.name ] = $_.value; } 
-			# if ( $_.value ) { $xData.Add( $_.name, $_.value ) } 
-			if ( $_.value ) { $xData.Add( $_.name, $_.value ) } 
-			else { $xNull.Add( $_.name, "<null>" ) }
-			}
-
-	return $xData + $xNull;
-	# Out-GridView -InputObject $xData
-	#>
-
-	}
-	
 
 
 

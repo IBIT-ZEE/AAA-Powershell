@@ -64,12 +64,14 @@ Import-Module -Name C:\dat\PowerShell\AAA\DB.psm1		# Database/ADO/Dataset
 Import-Module -Name C:\dat\PowerShell\AAA\FS.psm1		# Filesystem/Files/Folders/...
 Import-Module -Name C:\dat\PowerShell\AAA\MN.psm1		# Menus/Console
 Import-Module -Name C:\dat\PowerShell\AAA\NW.psm1		# Network
+Import-Module -Name C:\dat\PowerShell\AAA\OO.psm1		# Class/Object operations
 Import-Module -Name C:\dat\PowerShell\AAA\OS.psm1		# Operating System
 Import-Module -Name C:\dat\PowerShell\AAA\PS.psm1		# Powershell
 Import-Module -Name C:\dat\PowerShell\AAA\TS.psm1		# Text-to-Speech
 Import-Module -Name C:\dat\PowerShell\AAA\UI.psm1		# User Interfaces (CUI/GUI/WUI/...)
 Import-Module -Name C:\dat\PowerShell\AAA\VD.psm1		# Virtual Devices
 Import-Module -Name C:\dat\PowerShell\AAA\VM.psm1		# Virtual Machine
+Import-Module -Name C:\dat\PowerShell\AAA\WC.psm1		# Windows Components
 Import-Module -Name C:\dat\PowerShell\AAA\WS.psm1		# WebServices
 Import-Module -Name C:\dat\PowerShell\AAA\WF.psm1		# WebServices
 
