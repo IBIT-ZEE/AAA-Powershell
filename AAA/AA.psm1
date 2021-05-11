@@ -90,6 +90,7 @@ class _AA
 	# or passed to the "_AA-Owner-Object" constructor and set there
 	[string] $xName;
 	[datetime] $xDate = (Get-Date)
+	[ipaddress] $xConnect;
 	[pscredential] $xCredential = $AAA.System.Credential;
 
 	# for now a constructor is not need

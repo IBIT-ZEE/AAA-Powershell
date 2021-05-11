@@ -156,6 +156,54 @@ function VM-About()
 
 
 
+
+<#
+.SYNOPSIS
+~
+
+Create a new VM
+if VMName is not specified 
+a automatic AAA/Date-Filename is solicited (YYYYMMDDhhmmssxx)
+and is assigned to current object
+*defauls are 0HD 1cpu 2GbMem noCheckpoints | Gen1/DefaultSwitch
+
+>VM-Grab
+>VM-Get/Set
+
+~
+#>
+function VM-Create( [string]$xName = (Date-Filename), [VM_]$xObject = [VM_]::object )
+	{
+	# initialize if necessaire...
+	if ( $null -eq $xObject ){ $xObject = [VM_]::new() };
+
+	AAA-Progress -xPercent 0
+
+	# ?Gen1/Gen2 DefaultSwitch 
+	# 0HD 1cpu 2GbMem
+	$x = `
+		New-VM `
+			-Name $xName `
+			-Generation 1 `
+			-Switchname (Get-VMSwitch)[0].name `
+			-MemoryStartupBytes 2048MB `
+			-NoVHD 
+
+	# 2CPUs
+	# noCheckpoints 
+	set-vm $x -ProcessorCount 2
+	set-vm $x -AutomaticCheckpointsEnabled $false
+
+	# try   {  }  catch { throw "AAA/VM-Create ~> $xName creation failed..." }
+
+	# VM in control
+	$xObject.VM = $x;
+
+	return $xObject;
+	}
+
+
+
 <#
 .SYNOPSIS
 ~

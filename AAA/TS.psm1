@@ -7,6 +7,13 @@
 #		System.Speech.Recognition
 #		System.Speech.AudioFormat
 #
+#
+#	ATT*** MS/TTS/Speech-Synthesis is not ported to .net 5.0 
+#	* COM+ MITIGATION 
+#	$xTTS = New-Object -ComObject SAPI.SpVoice
+#	$xTTS.Speak("Time for the $((Get-Date).DayOfWeek) shuffle")
+#
+#
 
 
 Set-StrictMode -Version 5;
@@ -49,7 +56,7 @@ function TS- { AAA-Functions }
 #
 #
 
-class _TS
+class _AA
 	{
 
 	# Name will be set by DB-New if necessaire
@@ -61,10 +68,6 @@ class _TS
 	# for now a constructor is not need
 	# _TS(){}
 
-	$engine = $null;
-	$text = "";
-
-
 	}
 
 
@@ -75,12 +78,13 @@ class TS_
 	# holds the current object
 	# for all methods
 	# and interactive functionality [WS_]::$object
-	static [TS_] $object = $null;
-	[_TS]$_TS = [_TS]::new();
+	static [TS_]$object = $null;
+	[_AA]$_AA = [_AA]::new();
 
 
 	# SPECIFIC CLASS/TYPE PROPERTIES
-
+	$xEngine = $null;
+	$xText = "";
 
 	# ctor expose for clean AV object return
 	# in v5 PS has no constructor chainning
@@ -91,9 +95,13 @@ class TS_
 		# SHARED/STATIC holds the last/current object	
 		[TS_]::Object = $this;
 
-		$this._TS.xDate = Get-Date;
-		$this._TS.xCredential = global:AAA.System.Credential;
-		
+		$this._AA.xDate = Get-Date;
+		$this._AA.xCredential = $global:AAA.System.Credential;
+
+		# $this.xRate   = -2;
+		# $this.xVoice  = $null;
+		# $this.xVolume = $null;
+			
 		# constructor "default return" is the "instantiated object"
 		}
 
@@ -159,12 +167,13 @@ class TS_
 
 <#
 .SYNOPSIS
+~
 
 If defined...
 is called from AAA-Functions
 before listing available methods...
 
-
+~
 #>
 function TS-About()
 	{
@@ -174,6 +183,23 @@ function TS-About()
 
 	"
 	}
+
+
+
+<#
+.SYNOPSIS
+~
+
+Speak clipboard content...
+
+~
+#>
+function TS-Clipboard()
+	{
+	$x = Get-Clipboard  
+	TS-Speak $x;
+	}
+
 
 
 
@@ -205,11 +231,19 @@ function TS-New()
 	# object inception/instantiation
 	# SHARED $this::object and other METADATA/_TS (time, credential, ...)
 	# is assigned in the contructor
-	$x = [TS_]::new()
+	$xObject = [TS_]::new()
 
 	# ...+OBJECT INITIATION
+	# $xTTS = [System.Speech.Synthesis.SpeechSynthesizer]::new();
+	# $xTTS.Rate = -2;
+	#
+	# 2REFACTOR***
+	# when possible replace with .net 5+??? 
+	# for now [Speech Synthesis] is not ported to .net 5.0/PS7 
+	$xObject.xEngine = New-Object -ComObject SAPI.SpVoice
 
-	return $x; 
+
+	return $xObject; 
 	}
 
 
@@ -282,6 +316,28 @@ State refers to internal data
 
 
 #>
+function TS-Rate( $xRate, [TS_]$xObject = [TS_]::object )
+	{ 
+
+	if ( $null -eq $xObject ){ throw "AAA/TS-Rate ~> no TTS Engine initialized..." }
+
+	if ( $null -eq $xRate ){ return $xObject.xEngine.Rate; }
+
+	$xObject.xEngine.Rate = $xRate;
+
+	}
+
+
+
+
+<#
+.SYNOPSIS
+State display...
+
+State refers to internal data
+
+
+#>
 function TS-State( [TS_]$xObject = [TS_]::object )
 	{ 
 	
@@ -297,11 +353,15 @@ function TS-State( [TS_]$xObject = [TS_]::object )
 
 <#
 .SYNOPSIS
+~
+
 Status display...
 
 Status refers to external usage
 
 * default is current object
+
+~
 #>
 function TS-Status( [TS_]$xObject = [TS_]::object )
 	{ 
@@ -315,6 +375,27 @@ function TS-Status( [TS_]$xObject = [TS_]::object )
 
 
 
+
+<#
+.SYNOPSIS
+~
+
+Speak the argumented text...
+
+~
+#>
+function TS-Say( $x = "Nothing...", [TS_]$xObject = [TS_]::object )
+	{
+	if ( $null -eq $xObject ){ throw "AAA/TS-Say ~> no TTS engine inicialized..." }
+	
+	# use AAA.TTS
+	# if AAA.TTS -is $NULL message/GUI
+	[void] $xObject.xEngine.Speak( $x ) ;
+	}
+
+
+
+
 <#
 .SYNOPSIS
 Tests
@@ -324,76 +405,30 @@ and assert for incoherences
 #>
 function TS-Test( [TS_]$xObject = [TS_]::object )
 	{ 
-	'''
-	Simple test framework
-	Asserting for incohereces
+	'
+	TS-New
+	TS-Voice 0=Hazel 1=Zira ...
+	TS-Rate -11
+	TS-Say 1, 22, 333
 
-	Define your more critical 
-	centralize here a global call 
-	to all tests considered critical
-	applied over the current object...
-	'''
+	'
 
-	}
+	# Initialize engine...
+	TS-New;
 
+	TS-Say "Hello... for the moment...";
+	TS-Rate 1;
+	TS-Say "as .net 5 and Powershell 7 lacks MS Speech Synthesis implementation...";
+	TS-Rate 2;
+	TS-Say "this AA/OO is implemented using COM+...";
+	TS-Rate 3;
+	TS-Say "so,,, very limited... and waiting for .net catch-up...";
+	TS-Rate 4;
+	TS-Say "When this issue solved... then:";
+	TS-Rate 5;
+	TS-Say "This routine will state all installed Voices in this device...";
 
-# TS-New -xName "<aa-default>"
-
-
-
-
-
-
-
-
-
-
-
-<#
-.SYNOPSIS
-builds and returns 
-a AAA/Class TTS object for persistency of work
-
-.NOTES
-
-#>
-function TS-Object() { return [TTS]::new(); }
-
-
-function TS-Say( $x = "Nothing..." )
-	{
-	# use AAA.TTS
-	# if AAA.TTS -is $NULL message/GUI
-	$xTTS = [System.Speech.Synthesis.SpeechSynthesizer]::new();
-	$xTTS.Rate = -2;
-
-	[void] $xTTS.SpeakAsync( $x ) ;
-	}
-
-
-function TS-Clipboard()
-	{
-	$x = Get-Clipboard  
-	TS-Speak $x;
-	}
-
-
-
-function TS-Test
-	{
-	
-	# use AAA.TTS
-	# if AAA.TTS -is $NULL message/GUI
-	$xTTS = [System.Speech.Synthesis.SpeechSynthesizer]::new();
-	$xTTS.Rate = -2;
-
-	$xTTS.Speak( 
-		"
-		Hello...
-		This routine will state all installed Voices in this device...
-		" 
-		) 
-
+	<#
 	$x = 0;
 	Foreach ( $xVox in $xTTS.GetInstalledVoices() )
 		{
@@ -404,7 +439,91 @@ function TS-Test
 		$xTTS.Speak( $xVox.Voiceinfo.Description );
 		""
 		}
+	#>
+
+	}
+
+
+
+<#
+.SYNOPSIS
+~
+
+Get/Set current voice
+
+~
+#>
+function TS-Voice( [int]$x = -1, [TS_]$xObject = [TS_]::object )
+	{
+	if ( $null -eq $xObject ){ throw "AAA/TS-Voice ~> no TTS engine inicialized..." }
 	
+	if ( $x -lt 0 ){ return ($xObject.xEngine.Voice).Id.Split("\")[-1];  }
+
+	$xObject.xEngine.Voice = $xObject.xEngine.GetVoices()[ $x ]
+
+	return;
+	}
+
+
+
+<#
+.SYNOPSIS
+~
+
+Set next available voice
+
+~
+#>
+function TS-Voice-Next( [TS_]$xObject = [TS_]::object )
+	{
+	if ( $null -eq $xObject ){ throw "AAA/TS-Voice ~> no TTS engine inicialized..." }
+	
+	# $xObject.xEngine.Voice = $xObject.xEngine.GetVoices()[ $x ]
+
+	"2IMPLEMENT***"
+
+	return;
+	}
+
+
+
+<#
+.SYNOPSIS
+~
+
+Set next available voice
+
+~
+#>
+function TS-Voice-Previous( [TS_]$xObject = [TS_]::object )
+	{
+	if ( $null -eq $xObject ){ throw "AAA/TS-Voice ~> no TTS engine inicialized..." }
+	
+	# $xObject.xEngine.Voice = $xObject.xEngine.GetVoices()[ $x ]
+
+	"2IMPLEMENT***"
+
+	return;
+	}
+
+
+
+<#
+.SYNOPSIS
+~
+
+List available voices
+
+~
+#>
+function TS-Voices( [TS_]$xObject = [TS_]::object )
+	{
+	if ( $null -eq $xObject ){ throw "AAA/TS-Voice ~> no TTS engine inicialized..." }
+	
+	for( $x=0; $x -lt $xEngine.GetVoices().Count; $x++ )
+		{ Write-Host $xEngine.GetVoices()[$x].id.split("\")[-1] }
+
+	return
 	}
 
 
@@ -447,7 +566,7 @@ $x.SpeakSsml( $t )
 
 
 #>
-function zee-TS{}
+function TS-ZEE-Probe{}
 
 
 
